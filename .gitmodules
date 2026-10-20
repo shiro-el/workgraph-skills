@@ -1,0 +1,20 @@
+[submodule "vendor/mattpocock-skills"]
+	path = vendor/mattpocock-skills
+	url = https://github.com/mattpocock/skills.git
+	shallow = true
+[submodule "vendor/claude-code"]
+	path = vendor/claude-code
+	url = https://github.com/anthropics/claude-code.git
+	shallow = true
+[submodule "vendor/cursor-plugins"]
+	path = vendor/cursor-plugins
+	url = https://github.com/cursor/plugins.git
+	shallow = true
+[submodule "vendor/addyosmani-agent-skills"]
+	path = vendor/addyosmani-agent-skills
+	url = https://github.com/addyosmani/agent-skills.git
+	shallow = true
+[submodule "vendor/spec-kit"]
+	path = vendor/spec-kit
+	url = https://github.com/github/spec-kit.git
+	shallow = true

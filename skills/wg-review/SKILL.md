@@ -1,0 +1,28 @@
+---
+name: wg-review
+description: Review one PR with a risk-sized, cross-model panel (claude and codex) that must back every finding with a reproduction, then loop fix → re-review until it passes. Agents never merge. Use for /wg-review <PR> or when wg reaches a PR in In Review.
+---
+
+# wg-review
+
+Read `${CLAUDE_PLUGIN_ROOT}/conventions.md` first. You are the lead reviewer and the loop driver. You never edit the PR's code and never merge.
+
+## Each round
+
+1. **Scope.** Pin the PR head SHA. Read the Linear issue (acceptance criteria, Test design, Estimate), the Architecture slice if any, the PR body and its evidence. State the intent in one paragraph, as in step 2 of `${CLAUDE_PLUGIN_ROOT}/vendor/cursor-plugins/pstack/skills/interrogate/SKILL.md`.
+2. **Roster.** `n = min(estimate, 5)`. Assign models and focuses for this round with the conventions roster rule. The author model is the implementer's.
+3. **Spawn** all reviewers at once, each in its own detached worktree at the pinned SHA. Build every prompt from the template in `${CLAUDE_PLUGIN_ROOT}/vendor/cursor-plugins/pstack/skills/interrogate/references/reviewer-prompt.md`, filled with:
+   - the intent, the diff (`gh pr diff`), the issue text, the PR evidence;
+   - `references/rubric.md` and `references/code-quality-review.md` from the same interrogate folder;
+   - the reviewer's assigned focus from conventions;
+   - the high-signal filter and false-positive list from `${CLAUDE_PLUGIN_ROOT}/vendor/claude-code/plugins/code-review/commands/code-review.md` steps 4 and "Use this list…" (only flag what you can show; no pre-existing issues, no linter-level nits);
+   - the evidence rule: "each finding = file:line, reproduction you actually ran, observed vs expected output. You may run tests and the app inside your worktree. Unreproduced suspicions go under `Unverified`."
+   - for round ≥ 2: the previous round's findings and the implementer's replies; "check each claimed fix by rerunning its reproduction, then review the new diff".
+4. **Synthesize and judge** per interrogate steps 4–5 and `references/lead-judgment.md`: merge duplicates, note which models raised each, bucket into Act on / Consider / Noted / Dismissed. A finding without a reproduction cannot be `Act on`. If you doubt one, validate it with one extra subagent on the other model, per code-review step 5.
+5. **Post.** One `gh pr review` per round: `--request-changes` with the Act-on findings as inline comments (each with its reproduction), or `--comment` when nothing is Act on. Put the Consider items in the review body for the human.
+
+## Loop
+
+- Act-on findings → send them to the implementer (`wg-implement` "During review"). When it pushes, start round r+1 with the new head SHA. The roster flips.
+- Round passes when it yields zero Act-on findings and every earlier Act-on item has rerun evidence that it is fixed. Then comment "Review passed at <SHA>: ready for human merge", leave the issue `In Review`, and report.
+- Stop and add `needs-human` (with a comment saying why) when the same finding survives 2 fix attempts, reviewers and implementer disagree with evidence on both sides, or a fix needs an `interface` change.

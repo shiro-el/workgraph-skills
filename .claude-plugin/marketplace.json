@@ -1,0 +1,7 @@
+{
+  "name": "workgraph",
+  "owner": { "name": "shiro-el" },
+  "plugins": [
+    { "name": "workgraph", "source": "./", "description": "Linear-driven feature pipeline with cross-model review" }
+  ]
+}

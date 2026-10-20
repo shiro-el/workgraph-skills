@@ -1,46 +1,47 @@
-# Workgraph Skills
+# Workgraph
 
-Ship large software changes through small, reviewable pull requests.
+A Claude Code plugin for one personal pipeline: Linear holds every spec, plan and decision; the repo holds only code.
 
-These skills split a goal into issues, coordinate parallel implementation, assign independent reviewers, merge verified work, and check the integrated result. The main agent chooses each subagent's model and reasoning effort. Every subagent gets a separate Git worktree.
-
-The skills are composable. Use `plan-workgraph` to prepare the work, then `run-workgraph` to drive it to completion. Implementation, review, and final audit each have a focused skill.
-
-## Installation
-
-Install all five skills globally with the [Skills CLI](https://github.com/vercel-labs/skills). Choose the agent when prompted:
-
-```sh
-npx skills@latest add shiro-el/workgraph-skills --skill '*' -g
+```
+wg-grill → wg-spec → [large: wg-architect → wg-plan] → wg-implement (TDD, per issue, own worktree)
+        → wg-review (risk-sized claude + codex panel, evidence-backed, loops) → human merge → [large: wg-close]
 ```
 
-To preview the available skills before installing, run `npx skills@latest add shiro-el/workgraph-skills --list`.
+`/wg` is the entry point and coordinator. It reads the state from Linear, so any session can resume.
 
-## How it works
+## Built from upstream, not rewritten
 
-1. **Plan:** `plan-workgraph` turns the goal into issues with acceptance criteria, prerequisite links, and likely parallel-work conflicts.
-2. **Execute:** `run-workgraph` dispatches ready issues to separate worktrees and selects models and effort based on each task's difficulty and risk.
-3. **Review:** An independent agent checks each PR against its issue and the actual code diff. The implementation owner addresses confirmed findings.
-4. **Integrate:** The coordinator merges verified PRs in dependency order, then audits the combined behavior and routes any integration fixes back through the loop.
+The skills here are thin overlays. The upstream skills are pinned git submodules under `vendor/`; GitHub stores only the commit pointers. Each overlay says "follow upstream X, except …".
 
-The issue is the requirement source. A PR records the implementation and its verification evidence. The work graph records scheduling relationships; it does not replace either one.
+| Stage | Upstream |
+|---|---|
+| grill | mattpocock/skills `grilling` |
+| spec | anthropics/claude-code `feature-dev` (explorer, phases 2–3) + github/spec-kit `specify`, `clarify` |
+| architect | cursor/plugins pstack `architect` + `arena` + feature-dev `code-architect` |
+| plan | addyosmani/agent-skills `planning-and-task-breakdown` + spec-kit `tasks` + feature-dev `code-architect` critique |
+| implement | addyosmani `test-driven-development`, `browser-testing-with-devtools` + feature-dev `code-reviewer` |
+| review | pstack `interrogate` + claude-code `code-review` signal filter |
+| close | spec-kit `analyze` |
 
-## Skills
+Shared rules (Linear mapping, statuses, labels, Estimate → reviewer count, cross-model roster, evidence rule) are in [`conventions.md`](conventions.md).
 
-| Skill | Job |
-| --- | --- |
-| [`plan-workgraph`](skills/plan-workgraph/SKILL.md) | Break down the goal and identify dependencies and conflicts |
-| [`run-workgraph`](skills/run-workgraph/SKILL.md) | Coordinate agents, reviews, merges, and completion evidence |
-| [`implement-issue`](skills/implement-issue/SKILL.md) | Implement one issue and submit a scoped PR |
-| [`review-issue-pr`](skills/review-issue-pr/SKILL.md) | Review one pinned PR revision independently |
-| [`audit-integrated-work`](skills/audit-integrated-work/SKILL.md) | Verify the result across merged PRs |
+## Install (local, so the submodules resolve)
 
-The coordinator owns delegation and merge decisions. Implementation and review agents do not spawn further agents or approve their own work.
+```sh
+git clone --recurse-submodules https://github.com/shiro-el/workgraph-skills.git
+claude plugin marketplace add ./workgraph-skills
+claude plugin install workgraph@workgraph
+```
 
-## Graph format and prerequisites
+A marketplace added from a local path loads the plugin in place, so `vendor/` is present. Requirements: Linear MCP, `gh`, `codex` CLI.
 
-The optional persistent graph format is documented in [`workgraph-format.md`](skills/plan-workgraph/references/workgraph-format.md). Its validator requires Python and PyYAML (`python -m pip install PyYAML`). GitHub CLI access is needed when the workflow creates or reads issues and PRs.
+## Update an upstream
+
+```sh
+git -C vendor/<name> fetch --depth 1 origin main && git -C vendor/<name> checkout FETCH_HEAD
+git diff --submodule=diff vendor/<name>   # read what changed, then adjust the overlay
+```
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT for this repo's own files. Each submodule keeps its own license; `vendor/claude-code` is © Anthropic and is referenced, not redistributed.
