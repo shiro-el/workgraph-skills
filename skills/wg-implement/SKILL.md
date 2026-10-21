@@ -11,7 +11,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/conventions.md` first. You own exactly one Linear is
 
 1. Read the issue (`get_issue` with relations), its project description, and the project's `Architecture` document if there is one. The acceptance criteria and Test design are the requirement. The Architecture slice is the contract.
 2. If any blocker issue is not `Done`, stop and report.
-3. Create a worktree on the issue's `gitBranchName`, based on `project/<project-slug>` (large) or `develop` (small). Set the issue to `In Progress`.
+3. Create a worktree on the issue's `gitBranchName`, based on `project/<project-slug>` (large) or `develop` (small). If the coordinator already gave you a worktree path, use it and work nowhere else. Set the issue to `In Progress`.
 
 ## Build test-first
 
@@ -52,4 +52,4 @@ Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_
 
 ## During review
 
-You receive confirmed findings from `wg-review`. For each one: reproduce it, fix it test-first (failing-before → passing-after), push, and reply on the PR thread with the evidence. If you dispute a finding, reply with counter-evidence instead of changing code.
+You receive confirmed findings from `wg-review`. For each one: reproduce it, then grep for every place that shares the defective pattern (sibling writers, the other half of a read/write pair, the same rule duplicated in SQL and app code) and fix all of them in the same push, test-first (failing-before → passing-after) for each. Push, and reply on the PR thread with the evidence and the list of places checked. If you dispute a finding, reply with counter-evidence instead of changing code.

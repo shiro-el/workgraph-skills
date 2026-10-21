@@ -83,6 +83,8 @@ Running a codex reviewer (read-only, in the reviewer's own detached worktree):
 codex exec -s read-only -C "<worktree>" -o "<tmp>/review-<i>.md" - < "<tmp>/prompt-<i>.md"
 ```
 
+On Windows the `read-only` and `workspace-write` sandboxes cannot run commands. Use `-s danger-full-access` there, keep "do not edit files" in the prompt, and afterwards require `git -C "<worktree>" status --porcelain` to be empty. A dirty worktree means its output is discarded and the run repeated.
+
 Running a claude reviewer: `Agent` with `subagent_type: general-purpose`, the same prompt text, and instructions not to edit files.
 
 ## Evidence rule (applies to implementers and reviewers)
