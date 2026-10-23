@@ -1,6 +1,6 @@
 ---
 name: wg-close
-description: Before a project branch merges into develop, check that the integrated code matches the Linear spec, file every gap as a new issue, and open the project → develop PR for a human to merge. Use for $wg-close in Codex or /wg-close in Claude Code project when all project issues are Done.
+description: Before a project branch merges into develop, check that the integrated code matches the Linear spec, file every gap as a new issue, and open the final project → develop PR for human review and merge. Use for $wg-close in Codex or /wg-close in Claude Code project when all project issues are Done.
 ---
 
 # wg-close
@@ -25,4 +25,4 @@ Run passes 2–3 with one claude and one codex auditor in parallel (read-only, o
 
 - One comment on the Linear project (`save_status_update` or a project document named `Close audit`) with the coverage table, the drift list and the verification results.
 - Each partial / missing / contradicted / drift item becomes a new Linear issue in the same project, in the conventions issue format with a risk Estimate. Ask the user first when an item is really a spec change rather than a bug.
-- If nothing blocks: open the PR `project/<slug>` → `develop` with the coverage table in its body, and report it for a human to merge. If anything blocks, leave the PR unopened and list the blocking issues.
+- If nothing blocks: open the final PR `project/<slug>` → `develop` with the coverage table, integrated verification results, links to the merged issue PRs and their AI reviews, and any nonblocking Consider items in its body. Report it for human review and merge; do not merge it automatically. This is the project's routine human PR review checkpoint. If anything blocks, leave the PR unopened and list the blocking issues.

@@ -4,10 +4,14 @@ A Codex and Claude Code plugin for one personal pipeline: Linear holds every spe
 
 ```
 wg-grill → wg-spec → [large: wg-architect → wg-plan] → wg-implement (TDD, per issue, own worktree)
-        → wg-review (risk-sized claude + codex panel, evidence-backed, loops) → human merge → [large: wg-close]
+        → wg-review (risk-sized claude + codex panel, evidence-backed, loops)
+        → large: coordinator merges issue PRs → wg-close → final PR: human review and merge
+        → small: single final PR: human review and merge
 ```
 
 `$wg` in Codex (`/wg` in Claude Code) is the entry point and coordinator. It reads the state from Linear, so any session can resume.
+
+Every issue PR keeps its AI review and verification. Intermediate PRs into `project/<slug>`, including `interface` PRs, merge automatically through the coordinator after review and required CI pass. Human PR review and merge happen only on the final PR to `develop`; a small task's single PR is its final PR. Design approvals and exceptional `needs-human` stops still apply, and repository branch protection is respected.
 
 ## Built from upstream, not rewritten
 

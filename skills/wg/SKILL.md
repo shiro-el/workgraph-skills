@@ -26,15 +26,15 @@ Stop between grill/spec/architect/plan for the user's approval. From dispatch on
 ## Dispatch loop
 
 1. **Branch (large, once).** If `project/<slug>` does not exist, create it from `develop` and push it.
-2. **Ready set** = issues in `Todo` whose blockers are all `Done` and that do not carry `needs-human`. An issue blocked by an `interface` issue waits until that PR is merged by a human.
+2. **Ready set** = issues in `Todo` whose blockers are all `Done` and that do not carry `needs-human`. An issue blocked by an `interface` issue waits until that PR has passed AI review and merged into the project branch.
 3. **Parallelism.** Run ready issues in parallel only when their `Files likely touched` don't overlap. Otherwise run them one after another.
 4. **Implement.** One implementer subagent per issue (`Agent`, `general-purpose`, `isolation: "worktree"`, `run_in_background: true`) told to follow `${WORKGRAPH_ROOT}/skills/wg-implement/SKILL.md`. The default author model is the current host family (`codex` in Codex, `claude` in Claude Code); apply the conventions host compatibility rules. Record the author model: the review roster depends on it.
    `isolation: "worktree"` only works when this session's cwd is the target repo. Otherwise create the worktree yourself before spawning (`git -C <repo> fetch origin` then `git -C <repo> worktree add <tmp>/wt-<ISSUE-ID> -b <gitBranchName> origin/<base>`), drop `isolation`, and give the implementer that absolute path as the only place it may edit. Remove it with `git worktree remove` once the PR is merged or abandoned.
 5. **Pre-PR checks.** When an implementer reports a pushed branch, spawn the e2e verifier and the pre-review described in `wg-implement`, each in its own worktree. Send the findings back to the implementer with `SendMessage`. Repeat until it opens the PR.
    A defect outside the issue's acceptance criteria (pre-existing, another layer, another screen) is not fixed silently in this PR. If it blocks an acceptance criterion or an e2e row, stop and ask the user: widen this issue (amend its spec and Test design per `wg-spec`, then continue) or file a new issue that `blocks` this one. Otherwise file a new Linear issue with the reproduction and continue. Record the choice as an issue comment.
 6. **Review.** For each opened PR, run `wg-review` (you drive it; the reviewers are your subagents and `codex exec` calls).
-7. **Hand off.** When a review passes, report the PR to the user for merging. Agents never merge. Merged PRs move issues to `Done` through the GitHub integration. Then recompute the ready set.
-8. **Stop** when nothing is ready or running. Report: merged, awaiting human merge, `needs-human` (with the reason), still blocked. A human merge unblocks the next `wg` run.
+7. **Merge or hand off.** When an intermediate issue PR passes review, merge it into `project/<slug>` under the conventions PR review and merge rules. Do not ask the user to review or approve each intermediate PR. Confirm the merge and wait for the GitHub integration to move the issue to `Done`, then recompute the ready set and continue dispatch. On resume, an already-passed PR can proceed to merge only after rechecking those conditions. For a small issue's final PR to `develop`, report it for human review and merge instead.
+8. **Finish or stop.** When all project issues are `Done` / `Canceled`, continue directly to `wg-close` for the integrated audit and final PR. Otherwise, when nothing is ready or running, report: merged, awaiting final human review and merge, `needs-human` (with the reason), still blocked, or awaiting GitHub status synchronization.
 
 ## Coordinator rules
 

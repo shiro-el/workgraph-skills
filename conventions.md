@@ -57,12 +57,20 @@ Every acceptance criterion maps to at least one Test design row. Edge cases (emp
 
 ## Status flow (team statuses, no extra labels)
 
-`Backlog` draft → `Todo` spec complete, may be dispatched → `In Progress` implementer working → `In Review` PR open → `Done` (set by the GitHub integration when a human merges). Agents never merge PRs.
+`Backlog` draft → `Todo` spec complete, may be dispatched → `In Progress` implementer working → `In Review` PR open → `Done` (set by the GitHub integration when the PR merges).
+
+## PR review and merge
+
+- Every issue PR still runs `wg-review` and its fix → re-review loop.
+- **Intermediate PRs** target the large project's `project/<slug>` branch. After review passes, the `wg` coordinator merges them without a per-PR human review or approval, including `interface` PRs. Reviewers and implementers report their results to the coordinator; they do not merge.
+- Before merging, verify that the PR still targets the intended project branch, its head SHA matches the passed review, required CI checks have passed, and GitHub permits merging. Merge with `gh pr merge --match-head-commit <reviewed-SHA>` using the repository's supported merge method. A changed head needs review again; changes made to resolve conflicts also rerun the relevant checks and review. Never bypass branch protection or use an admin override. If a repository rule requires human approval or another merge condition cannot be satisfied, report the blocker with `needs-human`.
+- **Final PRs** require human review and merge. For large work this is `project/<slug>` → `develop`, opened by `wg-close` after its integrated audit passes. For small work the single issue PR → `develop` is already the final PR. Agents leave these open for the user.
+- Routine intermediate merges do not pause dispatch. Existing `needs-human` stops for unresolved findings, design changes and other exceptional blockers still apply.
 
 ## Labels
 
 - `needs-human`: the pipeline stopped and waits for a person; the latest issue comment says why and what answer unblocks it. The person removes the label to resume.
-- `interface`: the issue lands architect-defined types, signatures or schemas that other issues build on. Its PR needs a human merge before any blocked issue starts.
+- `interface`: the issue lands architect-defined types, signatures or schemas that other issues build on. Its PR must pass AI review and merge into the project branch before any blocked issue starts; no separate human merge is required.
 
 Plus the existing type labels (`Feature`, `Bug`, `Improvement`).
 
