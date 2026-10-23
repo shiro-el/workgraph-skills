@@ -87,7 +87,7 @@ Every acceptance criterion maps to at least one Test design row. Edge cases (emp
 
 ## Labels
 
-- `needs-human`: the pipeline stopped and waits for a person; the latest issue comment says why and what answer unblocks it. The person removes the label to resume.
+- `needs-human`: the pipeline stopped and waits for a person; the latest issue comment gives the question, the options with their consequences, a recommendation, and the evidence links. The person removes the label and reruns `wg <project>` (or `wg <ISSUE-ID>`) to resume; removing the label alone wakes nothing.
 - `interface`: the issue lands architect-defined types, signatures or schemas that other issues build on. Its PR must pass AI review and merge into the project branch before any blocked issue starts; no separate human merge is required.
 
 Plus the existing type labels (`Feature`, `Bug`, `Improvement`).
@@ -98,7 +98,7 @@ The issue **Estimate** is its risk, not its effort. `wg-plan` sets it on every i
 
 - reviewer count `n = min(estimate, 5)`; no estimate → stop and set one.
 - Raise the estimate for: money, auth/permissions, personal data, migrations, concurrency, public API/`interface` issues, anything irreversible.
-- A `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings, fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit.
+- When `n ≥ 2`, a `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings, fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit. With `n = 1` there is no credit: the pre-review is a generic pass without focus 1 or the evidence rule, so the round-1 reviewer always runs.
 
 ## Cross-model reviewer roster
 
@@ -120,12 +120,14 @@ Focuses, assigned in this order (reviewer i gets focus i; with n=1 the single re
 Running a codex reviewer (read-only, in the reviewer's own detached worktree):
 
 ```sh
-codex exec -s read-only -C "<worktree>" -o "<tmp>/review-<i>.md" - < "<tmp>/prompt-<i>.md"
+codex exec -s read-only -C "<worktree>" -o "<tmp>/review-<r>-<i>.md" - < "<tmp>/prompt-<r>-<i>.md"
 ```
 
 Keep the configured sandbox and permission controls on every host. If a sandbox prevents a required reproduction, report the limitation rather than changing to unrestricted access. Reviewers must not edit repository files. Check `git -C "<worktree>" status --porcelain` afterwards; discard results from an unexpectedly dirty worktree.
 
 Running a Claude reviewer: use a native Claude agent in Claude Code, or the `claude` CLI from Codex, with the same prompt text and instructions not to edit files.
+
+A CLI reviewer cannot write files from a read-only sandbox: it prints its full findings as its final message, and `-o` (codex) or the stdout redirect (`claude -p`) saves them to the findings path. Only a native subagent writes the file itself.
 
 ## Evidence rule (applies to implementers and reviewers)
 
@@ -152,7 +154,7 @@ Recorded per issue as one Linear comment headed `Metrics`, when its PR merges or
 
 - A full-suite, build or migration result belongs to one commit SHA. Record each run as SHA, command, environment as seen by the process that ran the tests (runtime version, worker count), pass/fail counts and duration, in the PR body's Verification section.
 - Later stages on the same SHA (verifier, reviewers, coordinator) cite that record instead of rerunning it. Rerun only a focused reproduction for a specific claim, or everything when the SHA changed.
-- **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. The `wg` coordinator grants the lane. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
+- **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. Whoever runs the heavy job takes the lane itself with a machine-local lock: `mkdir "<os-tmp>/wg-check-lane"` succeeding means you hold it; write your role, issue, SHA and start time into `owner` inside it, and remove the directory when the job ends, including on failure. If it exists, run focused work meanwhile and retry; a lock older than 2 hours whose owner is no longer running is stale, so remove it and note that in your report. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
 
 ## Worktrees and branches
 

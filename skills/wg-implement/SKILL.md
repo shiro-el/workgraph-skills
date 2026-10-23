@@ -26,7 +26,7 @@ Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-deve
 
 ## Before the PR (coordinator-run checks)
 
-When all rows pass and the full relevant suite is green, push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Ask the coordinator for the check lane before a full suite, build, install or DB reset. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
+When all rows pass and the full relevant suite is green (run it holding the check lane, conventions Verification runs), push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
 
 - **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
 - **pre-review**: one `code-reviewer` pass (`${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
@@ -39,6 +39,7 @@ Fix confirmed findings under the evidence rule, then open the PR.
 
 ```markdown
 Closes <ISSUE-ID>
+Author-model: <claude|codex> (<effort>)
 
 ## What changed
 ## Test design coverage
@@ -50,7 +51,7 @@ Closes <ISSUE-ID>
 ## Deviations / notes
 ```
 
-Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_attachment_from_upload`) and link them. Never commit them. Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
+`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_attachment_from_upload`) and link them. Never commit them. Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
 
 ## During review
 
