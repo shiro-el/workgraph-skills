@@ -150,7 +150,7 @@ Reports carry conclusions and paths, never file dumps or raw review text.
 
 ## Work metrics
 
-Agents do not count metrics. `scripts/wg-metrics.py` computes them afterwards from traces: GitHub PRs, reviews and comments, Linear issues and comments, and the Claude and Codex transcripts joined to issues by agent label (Worktrees and branches). It writes numbers only, never code or prose, to the `workgraph-metrics` checkout named by `WG_METRICS_DIR` (default: the sibling of a `workgraph-skills` checkout; an installed plugin needs the variable). If neither exists, skip collection and say so.
+Agents do not count metrics. `scripts/wg-metrics.py` computes them afterwards from traces: GitHub PRs, reviews and comments, Linear issues and comments, and the Claude and Codex transcripts joined to issues by agent label (Worktrees and branches). It writes numbers only, never code or prose, with repo, project, issue and PR names replaced by keyed pseudonyms, to the `workgraph-metrics` checkout named by `WG_METRICS_DIR` (default: the sibling of a `workgraph-skills` checkout; an installed plugin needs the variable). If neither exists, skip collection and say so.
 
 - **Version stamp.** Every `wg:` marker carries `wg=<version>`, read from `${WORKGRAPH_ROOT}/.claude-plugin/plugin.json`, so results split by release.
 - **What only an agent knows**, as one issue comment when its PR merges or it stops on `needs-human`: `<!-- wg:metrics wg=<version> contention=<check-lane contention reruns> -->`. The author model and effort are in the PR's `Author-model:` line, review counts in the `wg:review` markers, `needs-human` reasons in their comments.

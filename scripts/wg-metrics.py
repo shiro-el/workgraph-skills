@@ -5,11 +5,12 @@
   wg-metrics.py tlx <project-slug|ISSUE-ID> [--scores m,p,t,perf,e,f] [--out DIR]
   wg-metrics.py selftest
 
-Writes numbers, IDs, models and timestamps only; never code, prose or titles.
+Writes numbers, models and timestamps only; never code, prose or titles. Repo, project,
+issue and PR names become keyed pseudonyms (key in <out>/.salt, never committed).
 Sources: gh (PRs, reviews, comments), Linear GraphQL when LINEAR_API_KEY is set,
 Claude transcripts (~/.claude/projects) and Codex transcripts (~/.codex/sessions).
 """
-import argparse, json, os, re, subprocess, sys, urllib.request
+import argparse, hashlib, hmac, json, os, re, secrets, subprocess, sys, urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -253,8 +254,26 @@ def merge_jsonl(path, rows):
                 r = json.loads(line); old[r["key"]] = r
     old.update({r["key"]: r for r in rows})
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in old.values()), encoding="utf-8")
+    path.write_text("".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in old.values()), encoding="utf-8", newline="\n")
     return list(old.values())
+
+
+def masker(out):
+    """Keyed pseudonyms for repo, project, issue and PR names, so a public metrics repo names nothing.
+    The key lives in <out>/.salt (gitignored); losing it breaks joins with earlier rows."""
+    salt_file = Path(out) / ".salt"
+    if not salt_file.exists():
+        salt_file.parent.mkdir(parents=True, exist_ok=True)
+        salt_file.write_text(secrets.token_hex(16), encoding="utf-8")
+    salt = salt_file.read_text(encoding="utf-8").strip().encode()
+
+    def mask(kind, value):
+        if value is None:
+            return None
+        if kind == "subject":
+            kind = "issue" if ISSUE_RE.fullmatch(str(value)) else "project"
+        return "%s-%s" % (kind, hmac.new(salt, ("%s:%s" % (kind, value)).encode(), hashlib.sha256).hexdigest()[:10])
+    return mask
 
 
 def summary(issues, agents):
@@ -289,12 +308,17 @@ def cmd_collect(a):
         print("LINEAR_API_KEY not set: skipping estimates, status times, prepr and metrics markers", file=sys.stderr)
     teams = {r["issue"].split("-")[0] for r in issues if r["issue"]}
     agents = collect_claude(repo, teams) + collect_codex(repo, teams)
+    summary(issues, agents)  # real names: this output stays local (close audit)
+    mask = masker(a.out)
+    for r in issues:
+        r.update(repo=mask("repo", slug), pr=mask("pr", "%s#%d" % (slug, r["pr"])), issue=mask("issue", r["issue"]),
+                 project=mask("project", r["project"]))
+        r["key"] = r["pr"]
     for r in agents:
-        r["repo"] = slug
-    d = Path(a.out) / "data" / slug.replace("/", "__")
-    issues = merge_jsonl(d / "issues.jsonl", issues)
-    agents = merge_jsonl(d / "agents.jsonl", agents)
-    summary(issues, agents)
+        r.update(repo=mask("repo", slug), subject=mask("subject", r["subject"]))
+    d = Path(a.out) / "data" / mask("repo", slug)
+    merge_jsonl(d / "issues.jsonl", issues)
+    merge_jsonl(d / "agents.jsonl", agents)
     print("\nwrote %s" % d, file=sys.stderr)
 
 
@@ -307,8 +331,9 @@ def cmd_tlx(a):
     if len(vals) != 6 or not all(v.isdigit() and 0 <= int(v) <= 100 for v in vals):
         sys.exit("need six integers 0-100: " + ",".join(TLX_ITEMS))
     scores = dict(zip(TLX_ITEMS, map(int, vals)))
-    row = {"key": "tlx-%s-%s" % (a.subject, datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")),
-           "subject": a.subject, "wg": version(), "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    subject = masker(a.out)("subject", a.subject.upper() if ISSUE_RE.fullmatch(a.subject) else a.subject)
+    row = {"key": "tlx-%s-%s" % (subject, datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")),
+           "subject": subject, "wg": version(), "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
            **scores, "raw_tlx": round(sum(scores.values()) / 6, 1)}
     merge_jsonl(Path(a.out) / "data" / "tlx.jsonl", [row])
     print("raw TLX %.1f saved" % row["raw_tlx"])
@@ -321,6 +346,11 @@ def cmd_selftest(_):
     assert parse_label("D--Github-x--claude-worktrees-wg-sopo-129-r1-claude1")["role"] == "rv"
     assert parse_label("D--Github-x--claude-worktrees-wg-sopo-129-pre")["subject"] == "SOPO-129"
     assert parse_label("ACI 관점 리뷰") is None
+    import tempfile
+    with tempfile.TemporaryDirectory() as t:
+        m = masker(t)
+        assert m("subject", "SOPO-1") == m("issue", "SOPO-1") != m("issue", "SOPO-2") and m("subject", "x-y").startswith("project-")
+        assert "SOPO" not in m("issue", "SOPO-1") and m("repo", None) is None
     assert WG_CALL.search(r'"text":"<skill>\n<name>workgraph:wg</name>') and not WG_CALL.search("Use for $wg in Codex")
     assert markers("x <!-- wg:review wg=2.8.0 sha=ab round=2 act=1 -->")[0] == ("review", {"wg": "2.8.0", "sha": "ab", "round": "2", "act": "1"})
     print("ok")
