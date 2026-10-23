@@ -50,3 +50,5 @@ Read `${WORKGRAPH_ROOT}/vendor/claude-plugins-community/html-plan/skills/html-pl
 Update the draft created in step 2 rather than creating a duplicate. Resolve remaining blocking questions with the user; at most 3 `[NEEDS CLARIFICATION]` markers survive, and none may block the next stage. Set `## Spec review` to `Complete` only after the user's review and feedback reconciliation. Store enough rationale and unresolved questions in Linear for the next stage to proceed without the HTML file or pasted response.
 
 Show the user the Linear URL and stop. Next step: `wg-architect` (large) or `wg-implement` via `wg` (small).
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

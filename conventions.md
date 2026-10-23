@@ -2,6 +2,19 @@
 
 Every skill exposed under `skills/`, including `improve-codebase-architecture`, follows these rules. Upstream skills live verbatim under `${WORKGRAPH_ROOT}/vendor/` (pinned git submodules). When an upstream file and this file disagree, this file wins.
 
+## Reading map
+
+Every role reads **Host compatibility**, **Linear is the only document store**, **Handoff format** and **Evidence rule**. Then read only its own sections; skip the rest unless a step points there.
+
+| Role | Also read |
+|---|---|
+| `wg` coordinator | everything |
+| grill, spec | Sizing, Issue format |
+| architect, plan | Sizing, Issue format, Labels, Risk |
+| implementer | Issue format, Status flow, Labels, Verification runs, Worktrees |
+| reviewer, lead judge | Labels, Risk, Cross-model reviewer roster, Verification runs |
+| close verifier, auditor, judge | Status flow, PR review and merge, Verification runs, Work metrics |
+
 ## Host compatibility (Codex and Claude Code)
 
 `WORKGRAPH_ROOT` is the installed plugin root, resolved from the selected skill's `SKILL.md` as described there. Read upstream files from that root, while running code and git commands in the target repository/worktree. If `vendor/` is missing, stop and initialize the clone's submodules (`git submodule update --init --recursive`); do not invent upstream instructions. These conventions and the stage's overrides take precedence over upstream host-specific instructions.
@@ -121,6 +134,19 @@ A claim without evidence is not a finding and not a fix.
 - Reviewer finding = location + reproduction (command, test, or request) + observed output + expected output. Unreproduced suspicions go under "Unverified" and do not block.
 - Fix = failing-before output, the change, passing-after output, plus the full relevant suite.
 - Frontend = screenshots of each changed screen state (desktop and mobile width), uploaded to the Linear issue as attachments and linked in the PR body. Never commit screenshots.
+
+## Handoff format
+
+Every assignment from the coordinator and every report back uses these headings, so nothing is lost between contexts.
+
+- **Assignment:** role and stage; issue / PR and its base or pinned SHA; worktree (the only place to edit); inputs as Linear links and temp paths; expected output and where it goes; stop conditions.
+- **Report:** result (`done`, `blocked` or `needs-human`); the SHA it applies to; evidence as run records, reproductions and output paths; open items and what unblocks them; the Work metrics fields it knows; the next action it recommends.
+
+Reports carry conclusions and paths, never file dumps or raw review text.
+
+## Work metrics
+
+Recorded per issue as one Linear comment headed `Metrics`, when its PR merges or it stops on `needs-human`: author model and effort, review rounds, Act-on / Consider / Dismissed counts, Unverified findings later confirmed, fix attempts per Act-on finding, `needs-human` stops and their reason, check-lane contention reruns, and wall time from `In Progress` to merge. A high Dismissed share means reviewer prompts need work; repeated rounds on one focus mean the implementer prompt or the Test design missed it.
 
 ## Verification runs
 

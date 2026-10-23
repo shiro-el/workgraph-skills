@@ -31,3 +31,5 @@ Phase C asks for a human checkpoint. Present the synthesized design (usage sketc
 - Note in the document which parts become the `interface` issue. `wg-plan` creates that issue: it lands the types, signatures and `not implemented` stubs as its own PR.
 
 Phases D–E (implement against the sketch, scrap when wrong) belong to `wg-implement`.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

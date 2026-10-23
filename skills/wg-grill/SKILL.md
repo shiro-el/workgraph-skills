@@ -13,3 +13,5 @@ Read `${WORKGRAPH_ROOT}/conventions.md`, then follow `${WORKGRAPH_ROOT}/vendor/m
 - **Sizing is a frontier question** in round 1: small (one PR) or large (a Linear project). Recommend one.
 - **Always cover** these branches of the design tree before finishing: who the actors are, the happy path, every failure and refusal path, money/permissions/personal data, what is explicitly out of scope, and how a human will check it is done.
 - **Output.** When the frontier is empty and the user confirms shared understanding, write nothing to the repo. Hand the settled decision list (each decision, the chosen answer, and the rejected alternatives) to `wg-spec` in the conversation.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

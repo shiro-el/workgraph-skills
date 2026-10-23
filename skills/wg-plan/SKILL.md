@@ -37,3 +37,5 @@ After the issue set is drafted, launch 2 critics in parallel, one claude (`Agent
 ## Finish
 
 Move ready issues (all text complete, Estimate set) from `Backlog` to `Todo`. Show the user the DAG (issue IDs and blocks edges) and the critique decisions. Next: `wg`, to dispatch.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

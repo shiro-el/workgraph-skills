@@ -26,7 +26,7 @@ Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-deve
 
 ## Before the PR (coordinator-run checks)
 
-When all rows pass and the full relevant suite is green, push the branch and report to the coordinator: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Ask the coordinator for the check lane before a full suite, build, install or DB reset. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
+When all rows pass and the full relevant suite is green, push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Ask the coordinator for the check lane before a full suite, build, install or DB reset. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
 
 - **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
 - **pre-review**: one `code-reviewer` pass (`${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
@@ -55,3 +55,5 @@ Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_
 ## During review
 
 You receive confirmed findings from `wg-review`. For each one: reproduce it, then grep for every place that shares the defective pattern (sibling writers, the other half of a read/write pair, the same rule duplicated in SQL and app code) and fix all of them in the same push, test-first (failing-before → passing-after) for each. Push, and reply on the PR thread with the evidence and the list of places checked. If you dispute a finding, reply with counter-evidence instead of changing code.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

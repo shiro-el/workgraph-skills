@@ -19,10 +19,15 @@ Spec = the Linear project description. Plan = the `Architecture` document plus e
 2. **Spec coverage.** For every requirement, acceptance criterion and edge case in the project description: the issue(s) that claimed it, the merged code and test that prove it, and the result (met / partial / missing / contradicted). Evidence is a test name plus a run, or a reproduction, never "looks implemented".
 3. **Drift.** Find code behavior the spec never asked for, Architecture surfaces that changed, and `Decisions` / `Open questions` still open.
 
-Run passes 2–3 with one claude and one codex auditor in parallel (read-only, own worktrees). Merge their tables, and judge disagreements by rerunning the evidence yourself.
+Run passes 2–3 with one claude and one codex auditor in parallel (read-only, own worktrees). Merge their tables, and judge disagreements by rerunning the evidence.
+
+Under `wg`, the coordinator runs none of this itself: it grants the check lane to one verifier subagent for pass 1, spawns the auditors once that record exists, and gives a judge subagent the auditors' output paths to merge, judge and produce the output below. Each reports in the conventions handoff format. Invoked directly, you do these roles yourself.
 
 ## Output
 
 - One comment on the Linear project (`save_status_update` or a project document named `Close audit`) with the coverage table, the drift list and the verification results.
 - Each partial / missing / contradicted / drift item becomes a new Linear issue in the same project, in the conventions issue format with a risk Estimate. Ask the user first when an item is really a spec change rather than a bug.
-- If nothing blocks: open the final PR `project/<slug>` → `develop` with the coverage table, integrated verification results, links to the merged issue PRs and their AI reviews, and any nonblocking Consider items in its body. Report it for human review and merge; do not merge it automatically. This is the project's routine human PR review checkpoint. If anything blocks, leave the PR unopened and list the blocking issues.
+- Add the project's work metrics to the audit: per issue and totals, from the issues' metrics comments.
+- If nothing blocks: open the final PR `project/<slug>` → `develop` with the coverage table, integrated verification results, links to the merged issue PRs and their AI reviews, and any nonblocking Consider items in its body. Start the body with a `## Review guide` for the human: the changed areas ordered by risk (highest Estimate first), each with its issue, the files to read, what could go wrong there, and the Consider items that touch it. Report it for human review and merge; do not merge it automatically. This is the project's routine human PR review checkpoint. If anything blocks, leave the PR unopened and list the blocking issues.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.

@@ -7,7 +7,7 @@ description: Review one PR with a risk-sized, cross-model panel (claude and code
 
 Resolve `WORKGRAPH_ROOT` by resolving symlinks on this installed `SKILL.md`, then taking `../..` from its containing skill directory (the directory containing `conventions.md` and `vendor/`), never from the target repository or current working directory. Paths below use that resolved root; it is not a host-provided environment variable.
 
-Read `${WORKGRAPH_ROOT}/conventions.md` first. You are the lead reviewer and the loop driver. You never edit the PR's code and never merge.
+Read `${WORKGRAPH_ROOT}/conventions.md` first. You are the loop driver. You never edit the PR's code and never merge. Under `wg`, the coordinator drives steps 1–3 and the loop, and a lead-judge subagent does steps 4–5 (see "Lead judge"); invoked directly, you do all of them.
 
 ## Each round
 
@@ -19,9 +19,14 @@ Read `${WORKGRAPH_ROOT}/conventions.md` first. You are the lead reviewer and the
    - the reviewer's assigned focus from conventions;
    - the high-signal filter and false-positive list from `${WORKGRAPH_ROOT}/vendor/claude-code/plugins/code-review/commands/code-review.md` steps 4 and "Use this list…" (only flag what you can show; no pre-existing issues, no linter-level nits);
    - the evidence rule: "each finding = file:line, reproduction you actually ran, observed vs expected output. You may run tests and the app inside your worktree. Cite the recorded full-suite runs for this SHA instead of rerunning them; run focused reproductions. Unreproduced suspicions go under `Unverified`."
+   - the output rule: "write your full findings to `<tmp>/review-<r>-<i>.md` and reply only with that path and a count line (Act-on candidates / Unverified)";
    - for round ≥ 2: the previous round's findings and the implementer's replies; "check each claimed fix by rerunning its reproduction, then review the new diff". Give the delta diff (`git diff <previous SHA>..<SHA>`) in place of the full PR diff, plus the PR's changed-file list; the reviewer reads the rest from its worktree (`git diff <base>...HEAD`).
 4. **Synthesize and judge** per interrogate steps 4–5 and `references/lead-judgment.md`: merge duplicates, note which models raised each, bucket into Act on / Consider / Noted / Dismissed. A finding without a reproduction cannot be `Act on`. If you doubt one, validate it with one extra subagent on the other model, per code-review step 5.
 5. **Post.** One `gh pr review` per round: `--request-changes` with the Act-on findings as inline comments (each with its reproduction), or `--comment` when nothing is Act on. Put the nonblocking Consider items in the review body; carry their links into the final PR for the human reviewer. GitHub refuses `--request-changes` on a PR opened by the same account; then post `--comment` whose body starts with `**Changes requested (round <r>)**` and carries the same findings.
+
+## Lead judge
+
+Under `wg`, spawn one lead-judge subagent per round once every reviewer has replied. Its assignment: the intent, the pinned SHA, the reviewer output paths with each reviewer's model and focus, the previous round's review URL, and steps 4–5 above. It may spawn no subagents, so it validates a doubted finding by rerunning the reproduction in its own worktree at the pinned SHA, or through the other model's CLI as a leaf assignment (conventions CLI assignments). It reports in the conventions handoff format: the verdict (pass, or the number of Act-on findings), the posted review URL, and the Act-on findings as the text to forward to the implementer.
 
 ## Loop
 
@@ -29,3 +34,5 @@ Read `${WORKGRAPH_ROOT}/conventions.md` first. You are the lead reviewer and the
 - Round passes when it yields zero Act-on findings and every earlier Act-on item has rerun evidence that it is fixed. For an intermediate PR to `project/<slug>`, comment "Review passed at <SHA>: ready for coordinator merge" and report the PR URL, base branch, reviewed SHA and evidence to `wg`; no human review is required for this PR. For a final PR to `develop`, comment "Review passed at <SHA>: ready for final human review and merge" and report it to the user. Leave the issue `In Review` until the merge integration moves it to `Done`. When invoked directly on an intermediate PR, hand off to `wg` for the merge rather than asking the user to merge.
 - After a `needs-human` stop that ends in a redesign, restart at round 1: the roster and focus rotation reset and the redesigned diff counts as new code. Earlier Act-on findings carry over only as reproductions to rerun.
 - Stop and add `needs-human` (with a comment saying why) when the same finding survives 2 fix attempts, reviewers and implementer disagree with evidence on both sides, or a fix needs an `interface` change.
+
+**Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.
