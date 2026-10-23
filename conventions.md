@@ -150,7 +150,14 @@ Reports carry conclusions and paths, never file dumps or raw review text.
 
 ## Work metrics
 
-Recorded per issue as one Linear comment headed `Metrics`, when its PR merges or it stops on `needs-human`: author model and effort, review rounds, Act-on / Consider / Dismissed counts, Unverified findings later confirmed, fix attempts per Act-on finding, `needs-human` stops and their reason, check-lane contention reruns, and wall time from `In Progress` to merge. A high Dismissed share means reviewer prompts need work; repeated rounds on one focus mean the implementer prompt or the Test design missed it.
+Agents do not count metrics. `scripts/wg-metrics.py` computes them afterwards from traces: GitHub PRs, reviews and comments, Linear issues and comments, and the Claude and Codex transcripts joined to issues by agent label (Worktrees and branches). It writes numbers only, never code or prose, to the sibling `workgraph-metrics` repo.
+
+- **Version stamp.** Every `wg:` marker carries `wg=<version>`, read from `${WORKGRAPH_ROOT}/.claude-plugin/plugin.json`, so results split by release.
+- **What only an agent knows**, as one issue comment when its PR merges or it stops on `needs-human`: `<!-- wg:metrics wg=<version> contention=<check-lane contention reruns> -->`. The author model and effort are in the PR's `Author-model:` line, review counts in the `wg:review` markers, `needs-human` reasons in their comments.
+- **Estimate approval.** When the user approves or changes an issue's Estimate, post `<!-- wg:estimate wg=<version> proposed=<n> approved=<m> -->` on that issue.
+- **Workload.** When a final PR is handed to the human, ask the user to rate the run with `python "${WORKGRAPH_ROOT}/scripts/wg-metrics.py" tlx <project-slug or issue>` (NASA-TLX, six 0–100 items).
+
+A high Dismissed share means reviewer prompts need work; repeated rounds on one focus mean the implementer prompt or the Test design missed it.
 
 ## Verification runs
 
@@ -161,3 +168,5 @@ Recorded per issue as one Linear comment headed `Metrics`, when its PR merges or
 ## Worktrees and branches
 
 Every implementer and reviewer gets its own git worktree. Branch names use the Linear `gitBranchName` so the GitHub integration links the PR. Large work: base `project/<project-slug>`; small work: base `develop`.
+
+**Agent labels.** Every assignment gets a label `wg-<role>-<subject>[-<round>][-<i>]`. Role is one of `impl`, `pre` (pre-review), `e2e`, `setup`, `rv` (reviewer), `judge`, `tdr` (test-design reviewer), `arch`, `crit`, `explore`, `verify`, `audit`, `close`. Subject is the Linear issue identifier (`SOPO-158`), or the project slug for project-level work. Round and index are numbers, present when the role has them. Examples: `wg-impl-SOPO-158`, `wg-pre-SOPO-158-2`, `wg-rv-SOPO-158-1-3`, `wg-audit-checkout-revamp-1`. Name the assignment's worktree or temp dir `<tmp>/<label>`, use the label as a native subagent's `description`, and start a CLI prompt file name with it. Metrics join transcripts to issues by this label, so never improvise one.
