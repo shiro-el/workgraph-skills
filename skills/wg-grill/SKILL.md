@@ -1,11 +1,13 @@
 ---
 name: wg-grill
-description: First step of the workgraph pipeline. Interview the user relentlessly to turn a rough idea into settled decisions before any spec is written. Use for /wg-grill, "grill me", or when a feature request is still vague.
+description: First step of the workgraph pipeline. Interview the user relentlessly to turn a rough idea into settled decisions before any spec is written. Use for $wg-grill in Codex or /wg-grill in Claude Code, "grill me", or when a feature request is still vague.
 ---
 
 # wg-grill
 
-Read `${CLAUDE_PLUGIN_ROOT}/conventions.md`, then follow `${CLAUDE_PLUGIN_ROOT}/vendor/mattpocock-skills/skills/productivity/grilling/SKILL.md` exactly, with these overrides:
+Resolve `WORKGRAPH_ROOT` by resolving symlinks on this installed `SKILL.md`, then taking `../..` from its containing skill directory (the directory containing `conventions.md` and `vendor/`), never from the target repository or current working directory. Paths below use that resolved root; it is not a host-provided environment variable.
+
+Read `${WORKGRAPH_ROOT}/conventions.md`, then follow `${WORKGRAPH_ROOT}/vendor/mattpocock-skills/skills/productivity/grilling/SKILL.md` exactly, with these overrides:
 
 - **Ground first.** Before round 1, read the Linear team's existing projects and issues that touch the same area (Linear MCP `list_projects`, `list_issues` with a `query`) and any related open issue the user named. Facts from Linear and the codebase are yours to find, never questions.
 - **Sizing is a frontier question** in round 1: small (one PR) or large (a Linear project). Recommend one.

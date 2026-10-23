@@ -1,11 +1,13 @@
 ---
 name: wg-close
-description: Before a project branch merges into develop, check that the integrated code matches the Linear spec, file every gap as a new issue, and open the project → develop PR for a human to merge. Use for /wg-close <project> when all project issues are Done.
+description: Before a project branch merges into develop, check that the integrated code matches the Linear spec, file every gap as a new issue, and open the project → develop PR for a human to merge. Use for $wg-close in Codex or /wg-close in Claude Code project when all project issues are Done.
 ---
 
 # wg-close
 
-Read `${CLAUDE_PLUGIN_ROOT}/conventions.md`, then adapt `${CLAUDE_PLUGIN_ROOT}/vendor/spec-kit/templates/commands/analyze.md` (detection passes, severity, report shape). Overrides:
+Resolve `WORKGRAPH_ROOT` by resolving symlinks on this installed `SKILL.md`, then taking `../..` from its containing skill directory (the directory containing `conventions.md` and `vendor/`), never from the target repository or current working directory. Paths below use that resolved root; it is not a host-provided environment variable.
+
+Read `${WORKGRAPH_ROOT}/conventions.md`, then adapt `${WORKGRAPH_ROOT}/vendor/spec-kit/templates/commands/analyze.md` (detection passes, severity, report shape). Overrides:
 
 ## Artifacts compared
 

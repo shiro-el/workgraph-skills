@@ -1,11 +1,13 @@
 ---
 name: wg-implement
-description: Implement one Linear issue test-first in its own git worktree, then open a PR that carries the evidence. Run as the implementer subagent dispatched by wg, or directly for a single small issue. Use for /wg-implement <ISSUE-ID>.
+description: Implement one Linear issue test-first in its own git worktree, then open a PR that carries the evidence. Run as the implementer subagent dispatched by wg, or directly for a single small issue. Use for $wg-implement in Codex or /wg-implement in Claude Code ISSUE-ID.
 ---
 
 # wg-implement
 
-Read `${CLAUDE_PLUGIN_ROOT}/conventions.md` first. You own exactly one Linear issue.
+Resolve `WORKGRAPH_ROOT` by resolving symlinks on this installed `SKILL.md`, then taking `../..` from its containing skill directory (the directory containing `conventions.md` and `vendor/`), never from the target repository or current working directory. Paths below use that resolved root; it is not a host-provided environment variable.
+
+Read `${WORKGRAPH_ROOT}/conventions.md` first. You own exactly one Linear issue.
 
 ## Setup
 
@@ -15,19 +17,19 @@ Read `${CLAUDE_PLUGIN_ROOT}/conventions.md` first. You own exactly one Linear is
 
 ## Build test-first
 
-Follow `${CLAUDE_PLUGIN_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-development/SKILL.md`, including "Discover the Stack First". Overrides:
+Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-development/SKILL.md`, including "Discover the Stack First". Overrides:
 
 - Work through the issue's Test design table row by row: RED (run it, save the failing output), GREEN (smallest change), REFACTOR. Do not write production code for a row before its test has failed for the intended reason.
 - A row you find impossible or wrong is not silently dropped: note it in the PR's evidence with the reason.
-- Implement against the Architecture sketch as in `${CLAUDE_PLUGIN_ROOT}/vendor/cursor-plugins/pstack/skills/architect/SKILL.md` Phase D. A needed deviation (new parameter, changed type, moved boundary) on an `interface`-defined surface stops you: comment on the issue with the deviation and why, add `needs-human`, and report. Repeated same-shape friction is Phase E's scrap signal: report it rather than patching around it.
+- Implement against the Architecture sketch as in `${WORKGRAPH_ROOT}/vendor/cursor-plugins/pstack/skills/architect/SKILL.md` Phase D. A needed deviation (new parameter, changed type, moved boundary) on an `interface`-defined surface stops you: comment on the issue with the deviation and why, add `needs-human`, and report. Repeated same-shape friction is Phase E's scrap signal: report it rather than patching around it.
 - Follow the repo's CLAUDE.md / AGENTS.md and existing patterns, per feature-dev phase 5.
 
 ## Before the PR (coordinator-run checks)
 
 When all rows pass and the full relevant suite is green, push the branch and report to the coordinator: branch, head SHA, how to run the app, which screens changed. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
 
-- **e2e verifier**: drives the real app in a real browser per `${CLAUDE_PLUGIN_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
-- **pre-review**: one `code-reviewer` pass (`${CLAUDE_PLUGIN_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
+- **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
+- **pre-review**: one `code-reviewer` pass (`${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
 
 Fix confirmed findings under the evidence rule, then open the PR.
 

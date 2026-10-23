@@ -1,0 +1,16 @@
+{
+  "name": "workgraph",
+  "version": "2.2.0",
+  "description": "Linear-driven feature pipeline: grill, spec, architect, plan, TDD implement, cross-model PR review, close. Upstream skills are pinned git submodules under vendor/.",
+  "author": {
+    "name": "shiro-el"
+  },
+  "skills": "./skills/",
+  "homepage": "https://github.com/shiro-el/workgraph-skills",
+  "repository": "https://github.com/shiro-el/workgraph-skills",
+  "license": "MIT",
+  "interface": {
+    "displayName": "Workgraph",
+    "shortDescription": "Linear-driven feature pipeline with cross-model review."
+  }
+}

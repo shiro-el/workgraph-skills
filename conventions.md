@@ -1,6 +1,17 @@
 # Workgraph conventions
 
-Every `wg-*` skill follows these rules. Upstream skills live verbatim under `${CLAUDE_PLUGIN_ROOT}/vendor/` (pinned git submodules). When an upstream file and this file disagree, this file wins.
+Every `wg-*` skill follows these rules. Upstream skills live verbatim under `${WORKGRAPH_ROOT}/vendor/` (pinned git submodules). When an upstream file and this file disagree, this file wins.
+
+## Host compatibility (Codex and Claude Code)
+
+`WORKGRAPH_ROOT` is the installed plugin root, resolved from the selected skill's `SKILL.md` as described there. Read upstream files from that root, while running code and git commands in the target repository/worktree. If `vendor/` is missing, stop and initialize the clone's submodules (`git submodule update --init --recursive`); do not invent upstream instructions. These conventions and the stage's overrides take precedence over upstream host-specific instructions.
+
+Invoke stages as `$wg` / `$wg-spec` in Codex or `/wg` / `/wg-spec` in Claude Code; the same files serve both hosts. A reference to another stage means read its `skills/<stage>/SKILL.md` under `WORKGRAPH_ROOT`.
+
+- **Delegation:** `Agent`, `general-purpose`, `run_in_background`, and `SendMessage` in stage instructions describe Claude Code operations. In Codex, use the available native agent spawn, message, and wait tools for the equivalent bounded assignment. Create each worktree explicitly and pass its absolute path; Claude's `isolation: "worktree"` is not a Codex option. Use only capabilities exposed by the current host. If delegation is unavailable, run independent assignments sequentially through the required model's CLI, retaining separate worktrees and prompts.
+- **Model identity:** a native subagent belongs to the current host's model family. Codex native agents are `codex`; Claude Code native agents are `claude`. Never label a native Codex agent as Claude. The default implementer uses the current host's family; record the actual author family for every issue.
+- **Other family:** from Codex, run Claude assignments using an authenticated `claude` CLI in the assigned worktree with a prompt file, for example `(cd "<worktree>" && claude -p < "<tmp>/prompt.md" > "<tmp>/result.md")`. From Claude Code, use `codex exec` as below. Pass the full upstream prompt body and task context to either CLI; referring to a Claude agent name does not load it in Codex. Keep the CLI's normal permission controls.
+- **Required capabilities:** discover the connected Linear tools and map the operation names in these instructions to their exposed equivalents. Read stages need Linear access; PR stages also need authenticated `gh`. Cross-model stages require both authenticated model families and review/e2e stages need their specified test/browser tools. If a required capability is missing, report exactly what is unavailable and stop that stage; do not silently replace a cross-model panel with one family or claim checks passed.
 
 ## Linear is the only document store
 
@@ -18,6 +29,8 @@ Never write specs, plans, task lists, ADRs, design notes or review reports into 
 | Leftover work | new Linear issues in the same project | new issues |
 
 Code comments stay limited to the why the code cannot show. A scratch file needed during work goes under the OS temp dir, never the repo.
+
+`wg-spec` uses html-plan pages as temporary review snapshots of the Linear draft. Keep their HTML and assets under the OS temp dir. Record review decisions, rationale and open questions in Linear; later stages resume from Linear without needing the page. `## Spec review` is `Pending` during review and `Complete` once the user's feedback is reflected in the spec. Pending drafts stay in `Backlog` and return to `wg-spec` before architecture or implementation.
 
 ## Sizing
 
@@ -62,7 +75,7 @@ The issue **Estimate** is its risk, not its effort. `wg-plan` sets it on every i
 
 ## Cross-model reviewer roster
 
-Models: `claude` (Agent tool, `general-purpose` subagent) and `codex` (`codex exec`). Let `A` be the model that wrote the code and `B` the other one. For review round `r` (1-based):
+Models: `claude` and `codex`, run through the host compatibility rules above. Let `A` be the model that wrote the code and `B` the other one. For review round `r` (1-based):
 
 - majority = `B` when `r` is odd, `A` when `r` is even; majority size `ceil(n/2)`, minority `floor(n/2)`.
 - n=1 → r1: B, r2: A, r3: B …
@@ -83,9 +96,9 @@ Running a codex reviewer (read-only, in the reviewer's own detached worktree):
 codex exec -s read-only -C "<worktree>" -o "<tmp>/review-<i>.md" - < "<tmp>/prompt-<i>.md"
 ```
 
-On Windows the `read-only` and `workspace-write` sandboxes cannot run commands. Use `-s danger-full-access` there, keep "do not edit files" in the prompt, and afterwards require `git -C "<worktree>" status --porcelain` to be empty. A dirty worktree means its output is discarded and the run repeated.
+Keep the configured sandbox and permission controls on every host. If a sandbox prevents a required reproduction, report the limitation rather than changing to unrestricted access. Reviewers must not edit repository files. Check `git -C "<worktree>" status --porcelain` afterwards; discard results from an unexpectedly dirty worktree.
 
-Running a claude reviewer: `Agent` with `subagent_type: general-purpose`, the same prompt text, and instructions not to edit files.
+Running a Claude reviewer: use a native Claude agent in Claude Code, or the `claude` CLI from Codex, with the same prompt text and instructions not to edit files.
 
 ## Evidence rule (applies to implementers and reviewers)
 
