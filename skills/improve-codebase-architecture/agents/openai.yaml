@@ -1,0 +1,3 @@
+# Preserve the upstream skill's disable-model-invocation: true behavior.
+policy:
+  allow_implicit_invocation: false

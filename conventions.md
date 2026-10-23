@@ -1,6 +1,6 @@
 # Workgraph conventions
 
-Every `wg-*` skill follows these rules. Upstream skills live verbatim under `${WORKGRAPH_ROOT}/vendor/` (pinned git submodules). When an upstream file and this file disagree, this file wins.
+Every skill exposed under `skills/`, including `improve-codebase-architecture`, follows these rules. Upstream skills live verbatim under `${WORKGRAPH_ROOT}/vendor/` (pinned git submodules). When an upstream file and this file disagree, this file wins.
 
 ## Host compatibility (Codex and Claude Code)
 
@@ -10,7 +10,9 @@ Invoke stages as `$wg` / `$wg-spec` in Codex or `/wg` / `/wg-spec` in Claude Cod
 
 - **Delegation:** `Agent`, `general-purpose`, `run_in_background`, and `SendMessage` in stage instructions describe Claude Code operations. In Codex, use the available native agent spawn, message, and wait tools for the equivalent bounded assignment. Create each worktree explicitly and pass its absolute path; Claude's `isolation: "worktree"` is not a Codex option. Use only capabilities exposed by the current host. If delegation is unavailable, run independent assignments sequentially through the required model's CLI, retaining separate worktrees and prompts.
 - **Model identity:** a native subagent belongs to the current host's model family. Codex native agents are `codex`; Claude Code native agents are `claude`. Never label a native Codex agent as Claude. The default implementer uses the current host's family; record the actual author family for every issue.
-- **Other family:** from Codex, run Claude assignments using an authenticated `claude` CLI in the assigned worktree with a prompt file, for example `(cd "<worktree>" && claude -p < "<tmp>/prompt.md" > "<tmp>/result.md")`. From Claude Code, use `codex exec` as below. Pass the full upstream prompt body and task context to either CLI; referring to a Claude agent name does not load it in Codex. Keep the CLI's normal permission controls.
+- **Other family:** from Codex, run Claude assignments using an authenticated `claude` CLI in the assigned worktree with a prompt file, for example `(cd "<worktree>" && claude -p < "<tmp>/prompt.md" > "<tmp>/result.md")`. From Claude Code, use `codex exec` as below. Pass the full upstream prompt body and task context to either CLI; referring to a Claude agent name does not load it in Codex. Keep the CLI's normal permission controls, and pre-approve what the assignment must run instead of loosening the mode: pass the repo's focused test, typecheck, lint and build commands with `--allowedTools` (for example `--allowedTools "Read" "Grep" "Glob" "Bash(pnpm vitest:*)" "Bash(pnpm exec tsc:*)"`) and tell it to run one command per call, without `&&`, `;`, pipes, `cd` or variables, because a headless run cannot answer approval prompts.
+- **CLI assignments:** before the first CLI assignment of a session, run a one-line smoke prompt with the exact flags (model, effort, sandbox) you will use, and fix a rejected flag once there rather than in every assignment. A CLI assignment is a leaf worker: its prompt says not to spawn subagents. A CLI run that ends without a result is rerun once on the same SHA, then reported.
+- **Language:** write every user-facing message in the user's language for the whole run.
 - **Required capabilities:** discover the connected Linear tools and map the operation names in these instructions to their exposed equivalents. Read stages need Linear access; PR stages also need authenticated `gh`. Cross-model stages require both authenticated model families and review/e2e stages need their specified test/browser tools. If a required capability is missing, report exactly what is unavailable and stop that stage; do not silently replace a cross-model panel with one family or claim checks passed.
 
 ## Linear is the only document store
@@ -21,12 +23,15 @@ Never write specs, plans, task lists, ADRs, design notes or review reports into 
 |---|---|---|
 | Spec (what and why) | Linear **project** description | Linear **issue** description |
 | Architecture (types, signatures, boundaries, rationale) | Linear **document** named `Architecture` attached to the project | `## Design` section of the issue |
+| Decision (chosen option, rationale, rejected alternatives) | `## Decisions` in the relevant Linear project description or `Architecture` document | `## Decisions` in the relevant Linear issue |
 | Task | Linear **issue** in the project | the same single issue |
 | Prerequisite DAG | issue `blocks` / `blockedBy` relations | — |
 | Test design | `## Test design` section of each issue | same |
 | Implementation evidence | GitHub PR body (Linear links it automatically) | same |
 | Review findings | GitHub PR review comments | same |
 | Leftover work | new Linear issues in the same project | new issues |
+
+Do not offer, create, or update ADR files, load upstream ADR templates, or introduce a `docs/adr/` workflow. Upstream instructions to record an ADR instead record the chosen option, rationale, and rejected alternatives in the Linear decision location above. Upstream ADR prerequisites and report callouts use the relevant Linear decisions and links instead. Do not require a repository ADR directory.
 
 Code comments stay limited to the why the code cannot show. A scratch file needed during work goes under the OS temp dir, never the repo.
 
@@ -80,6 +85,7 @@ The issue **Estimate** is its risk, not its effort. `wg-plan` sets it on every i
 
 - reviewer count `n = min(estimate, 5)`; no estimate → stop and set one.
 - Raise the estimate for: money, auth/permissions, personal data, migrations, concurrency, public API/`interface` issues, anything irreversible.
+- A `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings, fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit.
 
 ## Cross-model reviewer roster
 
@@ -115,6 +121,12 @@ A claim without evidence is not a finding and not a fix.
 - Reviewer finding = location + reproduction (command, test, or request) + observed output + expected output. Unreproduced suspicions go under "Unverified" and do not block.
 - Fix = failing-before output, the change, passing-after output, plus the full relevant suite.
 - Frontend = screenshots of each changed screen state (desktop and mobile width), uploaded to the Linear issue as attachments and linked in the PR body. Never commit screenshots.
+
+## Verification runs
+
+- A full-suite, build or migration result belongs to one commit SHA. Record each run as SHA, command, environment as seen by the process that ran the tests (runtime version, worker count), pass/fail counts and duration, in the PR body's Verification section.
+- Later stages on the same SHA (verifier, reviewers, coordinator) cite that record instead of rerunning it. Rerun only a focused reproduction for a specific claim, or everything when the SHA changed.
+- **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. The `wg` coordinator grants the lane. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
 
 ## Worktrees and branches
 

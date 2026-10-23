@@ -25,6 +25,7 @@ Stop between grill/spec/architect/plan for the user's approval. From dispatch on
 
 ## Dispatch loop
 
+0. **Preflight (once per session).** Before the first dispatch, check every environment dependency the ready issues' Test design needs and fix what you can: `gh` and Linear access, a smoke prompt for each model CLI (conventions CLI assignments), the container engine when tests need a local DB, the repo's runtime version, line endings of the checkout the tests run in, env vars reaching the process that actually runs the tests (print them from inside it, e.g. across WSL → Windows), the browser tool opening a page, and test accounts signing in (including MFA). Ask the user once, as one list, for whatever you cannot fix. Record the result as a Linear project comment.
 1. **Branch (large, once).** If `project/<slug>` does not exist, create it from `develop` and push it.
 2. **Ready set** = issues in `Todo` whose blockers are all `Done` and that do not carry `needs-human`. An issue blocked by an `interface` issue waits until that PR has passed AI review and merged into the project branch.
 3. **Parallelism.** Run ready issues in parallel only when their `Files likely touched` don't overlap. Otherwise run them one after another.
@@ -41,3 +42,5 @@ Stop between grill/spec/architect/plan for the user's approval. From dispatch on
 - Choose each subagent's model and effort from risk (the Estimate) and observed rework. A same-shape failure twice means raising effort or reassessing the issue, not a third identical try.
 - Every subagent gets one bounded assignment: the issue ID, its base SHA, its worktree, the expected output, and the evidence rule.
 - Keep your context small. Subagents return conclusions and evidence summaries, not file dumps.
+- You dispatch, grant the check lane (conventions Verification runs), merge and update Linear. You do not implement, verify or run suites yourself: anything longer than a quick status query goes to a subagent, including rebasing a branch onto a newly merged base and rerunning its checks.
+- Wait on completion events (the host's agent wait tool or task notifications), not `sleep` loops or log tailing.

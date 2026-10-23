@@ -15,7 +15,7 @@ Spec = the Linear project description. Plan = the `Architecture` document plus e
 
 ## Passes
 
-1. **Verify the integrated branch.** Run the full test suite, build and lint, then every e2e row from every issue's Test design against the running app. Integration bugs hide between individually green PRs.
+1. **Verify the integrated branch.** Holding the check lane, run the full test suite, build and lint once on the integrated SHA and record them per conventions Verification runs; auditors cite that record. Then run every e2e row from every issue's Test design against the running app. Integration bugs hide between individually green PRs.
 2. **Spec coverage.** For every requirement, acceptance criterion and edge case in the project description: the issue(s) that claimed it, the merged code and test that prove it, and the result (met / partial / missing / contradicted). Evidence is a test name plus a run, or a reproduction, never "looks implemented".
 3. **Drift.** Find code behavior the spec never asked for, Architecture surfaces that changed, and `Decisions` / `Open questions` still open.
 
