@@ -77,6 +77,8 @@ Every acceptance criterion maps to at least one Test design row. Edge cases (emp
 
 `Backlog` draft → `Todo` spec complete, may be dispatched → `In Progress` implementer working → `In Review` PR open → `Done` (set by the GitHub integration when the PR merges).
 
+An issue filed mid-run (out-of-scope defect, close gap, final-PR comment) goes straight to `Todo` once it has the issue format above and an Estimate; report the Estimate and its reason in the next status update so the user can change it before review starts. One that needs a spec decision gets `needs-human` instead. Never leave a filed issue in `Backlog`: the ready set and `wg-close` would both skip it.
+
 ## PR review and merge
 
 - Every issue PR still runs `wg-review` and its fix → re-review loop.
@@ -98,7 +100,7 @@ The issue **Estimate** is its risk, not its effort. `wg-plan` sets it on every i
 
 - reviewer count `n = min(estimate, 5)`; no estimate → stop and set one.
 - Raise the estimate for: money, auth/permissions, personal data, migrations, concurrency, public API/`interface` issues, anything irreversible.
-- When `n ≥ 2`, a `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings, fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit. With `n = 1` there is no credit: the pre-review is a generic pass without focus 1 or the evidence rule, so the round-1 reviewer always runs.
+- When `n ≥ 2`, a `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings (its `wg:prepr` issue marker shows that SHA, `open=0` and `reviewer=B`), fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit. With `n = 1` there is no credit: the pre-review is a generic pass without focus 1 or the evidence rule, so the round-1 reviewer always runs.
 
 ## Cross-model reviewer roster
 
@@ -154,7 +156,7 @@ Recorded per issue as one Linear comment headed `Metrics`, when its PR merges or
 
 - A full-suite, build or migration result belongs to one commit SHA. Record each run as SHA, command, environment as seen by the process that ran the tests (runtime version, worker count), pass/fail counts and duration, in the PR body's Verification section.
 - Later stages on the same SHA (verifier, reviewers, coordinator) cite that record instead of rerunning it. Rerun only a focused reproduction for a specific claim, or everything when the SHA changed.
-- **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. Whoever runs the heavy job takes the lane itself with a machine-local lock: `mkdir "<os-tmp>/wg-check-lane"` succeeding means you hold it; write your role, issue, SHA and start time into `owner` inside it, and remove the directory when the job ends, including on failure. If it exists, run focused work meanwhile and retry; a lock older than 2 hours whose owner is no longer running is stale, so remove it and note that in your report. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
+- **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. Whoever runs the heavy job takes the lane itself with a machine-local lock: `mkdir "<os-tmp>/wg-check-lane"` succeeding means you hold it. Take the lock, run the job and remove the directory in one shell invocation, so the lock lives exactly as long as that shell and is removed on failure too; write its PID (`$$` in POSIX shells, `$PID` in PowerShell), hostname, role, issue, SHA and start time into `owner` inside it. If it exists, run focused work meanwhile and retry. The lock is stale when the owner's PID no longer exists on this host (`kill -0 <pid>` or `Get-Process -Id <pid>`), or when it is older than 2 hours and has no readable PID; remove a stale lock and note that in your report. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
 
 ## Worktrees and branches
 
