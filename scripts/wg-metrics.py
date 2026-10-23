@@ -14,7 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_OUT = ROOT.parent / "workgraph-metrics"
+# an installed plugin runs from a cache copy, so its sibling is not the metrics repo
+DEFAULT_OUT = os.environ.get("WG_METRICS_DIR") or (str(ROOT.parent / "workgraph-metrics") if (ROOT.parent / "workgraph-metrics").is_dir() else None)
 ROLES = "impl pre e2e setup rv judge tdr arch crit explore verify audit close".split()
 ISSUE_RE = re.compile(r"(?<![A-Za-z])([A-Za-z]{2,10}-\d+)")
 MARKER_RE = re.compile(r"<!--\s*wg:(\w+)\s+(.*?)-->", re.S)
@@ -332,8 +333,10 @@ def main():
     t = sub.add_parser("tlx"); t.add_argument("subject"); t.add_argument("--scores"); t.set_defaults(f=cmd_tlx)
     sub.add_parser("selftest").set_defaults(f=cmd_selftest)
     for s in (c, t):
-        s.add_argument("--out", default=str(DEFAULT_OUT))
+        s.add_argument("--out", default=DEFAULT_OUT)
     a = p.parse_args()
+    if getattr(a, "out", 1) is None:
+        p.error("set WG_METRICS_DIR to the workgraph-metrics checkout, or pass --out")
     a.f(a)
 
 
