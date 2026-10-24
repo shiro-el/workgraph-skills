@@ -85,7 +85,7 @@ An issue filed mid-run (out-of-scope defect, close gap, final-PR comment) goes s
 - Every issue PR still runs `wg-review` and its fix → re-review loop.
 - **Intermediate PRs** target the large project's `project/<slug>` branch. After review passes, the `wg` coordinator merges them without a per-PR human review or approval, including `interface` PRs. Reviewers and implementers report their results to the coordinator; they do not merge.
 - Before merging, verify that the PR still targets the intended project branch, its head SHA matches the passed review and has a recorded full-suite run (Verification runs; if missing, have the implementer or a fresh subagent run it), required CI checks have passed, and GitHub permits merging. Merge with `gh pr merge --match-head-commit <reviewed-SHA>` using the repository's supported merge method. A changed head needs review again; changes made to resolve conflicts also rerun the relevant checks and review. Never bypass branch protection or use an admin override. If a repository rule requires human approval or another merge condition cannot be satisfied, report the blocker with `needs-human`.
-- **Final PRs** require human review and merge. For large work this is `project/<slug>` → `develop`, opened by `wg-close` after its integrated audit passes. For small work the single issue PR → `develop` is already the final PR. Agents leave these open for the user.
+- **Final PRs** require human review and merge. For large work this is `project/<slug>` → `develop`, opened by `wg-close` after its integrated audit passes. For small work the single issue PR → `develop` is already the final PR. A final PR gets no `wg-review` panel: the pre-review and the human review it. Agents leave these open for the user.
 - Routine intermediate merges do not pause dispatch. Existing `needs-human` stops for unresolved findings, design changes and other exceptional blockers still apply.
 
 ## Labels
@@ -99,7 +99,7 @@ Plus the existing type labels (`Feature`, `Bug`, `Improvement`).
 
 The issue **Estimate** is its risk, not its effort. `wg-plan` sets it on every issue.
 
-- reviewer count `n = min(estimate, 5)`; no estimate → stop and set one.
+- reviewer count `n = min(estimate, 2)`; no estimate → stop and set one.
 - Raise the estimate for: money, auth/permissions, personal data, migrations, concurrency, public API/`interface` issues, anything irreversible.
 - When `n ≥ 2`, a `wg-implement` pre-review by model `B` on the PR's exact head SHA, with no unresolved findings (its `wg:prepr` issue marker shows that SHA, `open=0` and `reviewer=B`), fills one round-1 `B` slot (focus 2); spawn the remaining `n - 1`. Any commit after it voids the credit. With `n = 1` there is no credit: the pre-review is a generic pass without focus 1 or the evidence rule, so the round-1 reviewer always runs.
 
@@ -110,9 +110,8 @@ Models: `claude` and `codex`, run through the host compatibility rules above. Le
 - majority = `B` when `r` is odd, `A` when `r` is even; majority size `ceil(n/2)`, minority `floor(n/2)`.
 - n=1 → r1: B, r2: A, r3: B …
 - n=2 → 1 B + 1 A every round.
-- n=3 → r1: 2 B + 1 A, r2: 2 A + 1 B, …
 
-Focuses, assigned in this order (reviewer i gets focus i; with n=1 the single reviewer takes focuses 1 and 2 together). Shift the focus list by one each round so each focus meets a different model:
+Focuses, assigned in this order (with n=1 the single reviewer takes focuses 1 and 2 together; with n=2 reviewer 1 takes focuses 1, 3 and 5 and reviewer 2 takes 2 and 4). Shift the focus list by one each round so each focus meets a different model:
 
 1. Spec conformance: every acceptance criterion and Test design row is implemented and actually tested.
 2. Correctness: bugs and logic errors in the introduced code.
@@ -126,7 +125,7 @@ Running a codex reviewer (read-only, in the reviewer's own detached worktree):
 codex exec -s read-only -C "<worktree>" -o "<tmp>/review-<r>-<i>.md" - < "<tmp>/prompt-<r>-<i>.md"
 ```
 
-A subagent that runs this waits for it in the foreground (host compatibility: waiting inside an assignment).
+The coordinator runs a CLI reviewer as its own background shell command (Claude Code: Bash `run_in_background`), whose exit is its completion event. Never wrap a CLI reviewer in a subagent that only waits for it: the wrapper costs as many tokens as the review. A subagent that runs a CLI as part of its own work (a judge validating a finding) waits for it in the foreground (host compatibility: waiting inside an assignment).
 
 Keep the configured sandbox and permission controls on every host. If a sandbox prevents a required reproduction, report the limitation rather than changing to unrestricted access. Reviewers must not edit repository files. Check `git -C "<worktree>" status --porcelain` afterwards; discard results from an unexpectedly dirty worktree.
 

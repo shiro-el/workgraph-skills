@@ -51,7 +51,7 @@ Author-model: <claude|codex> (<effort>)
 ## Deviations / notes
 ```
 
-`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_attachment_from_upload`) and link them. Never commit them. Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
+`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_attachment_from_upload`) and link them. Never commit them. For a final PR to `develop` (small work), which gets no review panel, start the body with the `## Review guide` and `## Where the automation is least sure` sections shaped as in `wg-close` Output, scoped to this PR, and run the full suite on the head SHA as in "During review". Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
 
 ## During review
 

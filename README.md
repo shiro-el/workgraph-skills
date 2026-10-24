@@ -4,14 +4,14 @@ A Codex and Claude Code plugin for one personal pipeline: Linear holds every spe
 
 ```
 wg-grill → wg-spec → [large: wg-architect → wg-plan] → wg-implement (TDD, per issue, own worktree)
-        → wg-review (risk-sized claude + codex panel, evidence-backed, loops)
+        → wg-review on intermediate PRs (risk-sized claude + codex panel, evidence-backed, loops)
         → large: coordinator merges issue PRs → wg-close → final PR: human review and merge
         → small: single final PR: human review and merge
 ```
 
 `$wg` in Codex (`/wg` in Claude Code) is the entry point and coordinator. It reads the state from Linear, so any session can resume.
 
-Every issue PR keeps its AI review and verification. Intermediate PRs into `project/<slug>`, including `interface` PRs, merge automatically through the coordinator after review and required CI pass. Human PR review and merge happen only on the final PR to `develop`; a small task's single PR is its final PR. Design approvals and exceptional `needs-human` stops still apply, and repository branch protection is respected.
+Every intermediate issue PR keeps its AI review and verification; a final PR gets the pre-review and the human review. Intermediate PRs into `project/<slug>`, including `interface` PRs, merge automatically through the coordinator after review and required CI pass. Human PR review and merge happen only on the final PR to `develop`; a small task's single PR is its final PR. Design approvals and exceptional `needs-human` stops still apply, and repository branch protection is respected.
 
 The coordinator only dispatches, merges and updates Linear; subagents do the running, review judging and close audit, report in one handoff format, and the coordinator waits on their completion events. It hands over to a fresh session through a Linear `Handover` comment after every few merges, and stamps every state marker with the workgraph version. `scripts/wg-metrics.py` computes per-issue metrics (review rounds, finding counts, tokens per role, post-review commits, human comments, wall time) from those markers, Linear and the agent transcripts, joined by agent labels, plus a NASA-TLX workload rating, into a sibling `workgraph-metrics` repo for tuning. The final PR opens with a risk-ordered review guide for the human reviewer. A one-time preflight checks the environment before dispatch. Each full-suite run is recorded against its commit SHA and reused by later stages on that SHA, and heavy jobs (full suite, build, install, DB reset) take turns through one check lane per machine.
 
