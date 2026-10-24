@@ -84,7 +84,7 @@ An issue filed mid-run (out-of-scope defect, close gap, final-PR comment) goes s
 
 - Every issue PR still runs `wg-review` and its fix → re-review loop.
 - **Intermediate PRs** target the large project's `project/<slug>` branch. After review passes, the `wg` coordinator merges them without a per-PR human review or approval, including `interface` PRs. Reviewers and implementers report their results to the coordinator; they do not merge.
-- Before merging, verify that the PR still targets the intended project branch, its head SHA matches the passed review, required CI checks have passed, and GitHub permits merging. Merge with `gh pr merge --match-head-commit <reviewed-SHA>` using the repository's supported merge method. A changed head needs review again; changes made to resolve conflicts also rerun the relevant checks and review. Never bypass branch protection or use an admin override. If a repository rule requires human approval or another merge condition cannot be satisfied, report the blocker with `needs-human`.
+- Before merging, verify that the PR still targets the intended project branch, its head SHA matches the passed review and has a recorded full-suite run (Verification runs; if missing, have the implementer or a fresh subagent run it), required CI checks have passed, and GitHub permits merging. Merge with `gh pr merge --match-head-commit <reviewed-SHA>` using the repository's supported merge method. A changed head needs review again; changes made to resolve conflicts also rerun the relevant checks and review. Never bypass branch protection or use an admin override. If a repository rule requires human approval or another merge condition cannot be satisfied, report the blocker with `needs-human`.
 - **Final PRs** require human review and merge. For large work this is `project/<slug>` → `develop`, opened by `wg-close` after its integrated audit passes. For small work the single issue PR → `develop` is already the final PR. Agents leave these open for the user.
 - Routine intermediate merges do not pause dispatch. Existing `needs-human` stops for unresolved findings, design changes and other exceptional blockers still apply.
 
@@ -139,7 +139,7 @@ A CLI reviewer cannot write files from a read-only sandbox: it prints its full f
 A claim without evidence is not a finding and not a fix.
 
 - Reviewer finding = location + reproduction (command, test, or request) + observed output + expected output. Unreproduced suspicions go under "Unverified" and do not block.
-- Fix = failing-before output, the change, passing-after output, plus the full relevant suite.
+- Fix = failing-before output, the change, passing-after output, plus the changed-files check (Verification runs).
 - Frontend = screenshots of each changed screen state (desktop and mobile width), uploaded to the Linear issue as attachments and linked in the PR body. Never commit screenshots.
 
 ## Handoff format
@@ -165,7 +165,8 @@ A high Dismissed share means reviewer prompts need work; repeated rounds on one 
 ## Verification runs
 
 - A full-suite, build or migration result belongs to one commit SHA. Record each run as SHA, command, environment as seen by the process that ran the tests (runtime version, worker count), pass/fail counts and duration, in the PR body's Verification section.
-- Later stages on the same SHA (verifier, reviewers, coordinator) cite that record instead of rerunning it. Rerun only a focused reproduction for a specific claim, or everything when the SHA changed.
+- Later stages on the same SHA (verifier, reviewers, coordinator) cite that record instead of rerunning it. Rerun only a focused reproduction for a specific claim, or that stage's checks when the SHA changed.
+- **Full suite once, on the final SHA.** While a branch still changes (building, pre-review fixes, review fixes), verify each push with focused tests and the repo's changed-files check, outside the check lane: its own script if it has one (for example `pnpm check:changed`), otherwise lint and typecheck plus the tests related to the changed files. Run the full suite, holding the check lane, once per issue: on the head SHA that passed review, before merge. A commit after that run (a fix, a rebase onto a moved base) voids it and the review, as in PR review and merge.
 - **Check lane:** one full suite, build, dependency install or local DB reset runs at a time on a machine; focused tests may run in parallel. Whoever runs the heavy job takes the lane itself with a machine-local lock: `mkdir "<os-tmp>/wg-check-lane"` succeeding means you hold it. Take the lock, run the job and remove the directory in one shell invocation, so the lock lives exactly as long as that shell and is removed on failure too; write its PID (`$$` in POSIX shells, `$PID` in PowerShell), hostname, role, issue, SHA and start time into `owner` inside it. If it exists, run focused work meanwhile and retry. The lock is stale when the owner's PID no longer exists on this host (`kill -0 <pid>` or `Get-Process -Id <pid>`), or when it is older than 2 hours and has no readable PID; remove a stale lock and note that in your report. A timeout seen while another heavy job ran is recorded as contention and rerun alone before it counts as a failure.
 
 ## Worktrees and branches

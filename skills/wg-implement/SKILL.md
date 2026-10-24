@@ -26,7 +26,7 @@ Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-deve
 
 ## Before the PR (coordinator-run checks)
 
-When all rows pass and the full relevant suite is green (run it holding the check lane, conventions Verification runs), push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
+When all rows pass and the changed-files check is green (conventions Verification runs; the full suite waits for the SHA that passes review), push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
 
 - **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
 - **pre-review**: one `code-reviewer` pass (`${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
@@ -56,5 +56,7 @@ Author-model: <claude|codex> (<effort>)
 ## During review
 
 You receive confirmed findings from `wg-review`. For each one: reproduce it, then grep for every place that shares the defective pattern (sibling writers, the other half of a read/write pair, the same rule duplicated in SQL and app code) and fix all of them in the same push, test-first (failing-before → passing-after) for each. Push, and reply on the PR thread with the evidence and the list of places checked. If you dispute a finding, reply with counter-evidence instead of changing code.
+
+When the coordinator reports that review passed, run the full suite on that head SHA holding the check lane, add it to the PR's Verification section and report the result. A failure is fixed like a finding: test-first, push, and the new SHA goes back to review.
 
 **Override check.** After reading the upstream files and before acting on them, reread this file's overrides. Where upstream and these overrides or `conventions.md` differ, the overrides win; skip the upstream parts they replace instead of reconciling them.
