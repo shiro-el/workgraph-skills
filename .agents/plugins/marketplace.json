@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "workgraph",
-      "version": "2.8.2",
+      "version": "2.8.3",
       "description": "Linear-driven feature pipeline with cross-model review",
       "source": {
         "source": "local",
