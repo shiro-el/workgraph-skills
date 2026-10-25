@@ -139,7 +139,10 @@ A claim without evidence is not a finding and not a fix.
 
 - Reviewer finding = location + reproduction (command, test, or request) + observed output + expected output. Unreproduced suspicions go under "Unverified" and do not block.
 - Fix = failing-before output, the change, passing-after output, plus the changed-files check (Verification runs).
-- Frontend = screenshots of each changed screen state (desktop and mobile width), uploaded to the Linear issue as attachments and linked in the PR body. Never commit screenshots.
+- Frontend = screenshots of each changed screen state (desktop and mobile width), shown inline on the Linear issue and linked from the PR body. Never commit screenshots.
+  - One image per state and width. Never stitch desktop and mobile (or several states) into one image.
+  - Save at native resolution: the image's pixel width equals the viewport width (1280 desktop, 375 mobile) times the device pixel ratio. A browser tool's screenshot shown to the model is downscaled to fit its image budget, so never upload that copy; capture to a file with the DevTools Protocol (`Page.captureScreenshot`) or Playwright `page.screenshot({ path })`, and check the file's pixel width before uploading.
+  - Upload each file with `prepare_file_upload` and put all of them in one issue comment headed `## Screenshots`, each as `![<state> — <width>](<assetUrl>)` under a line naming the state, so they render inline. Do not add them as issue Resources, which show only as links. The PR body links that comment.
 
 ## Handoff format
 

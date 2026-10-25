@@ -29,7 +29,7 @@ Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-deve
 
 When all rows pass and the changed-files check is green (conventions Verification runs; the full suite waits for the SHA that passes review), push the branch and report to the coordinator in the conventions handoff format: branch, head SHA, the recorded verification runs for that SHA (conventions Verification runs), how to run the app, which screens changed. Subagents cannot spawn subagents, so the coordinator (`wg`) runs these in their own worktrees and sends you the results:
 
-- **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width.
+- **e2e verifier**: drives the real app in a real browser per `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/browser-testing-with-devtools/SKILL.md`, runs the issue's e2e rows, and for frontend changes captures screenshots of each changed state at desktop and mobile width as separate native-resolution files (conventions Evidence rule).
 - **pre-review**: one `code-reviewer` pass (`${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-reviewer.md`) on the model you are not.
 
 Fix confirmed findings under the evidence rule, then open the PR.
@@ -50,11 +50,11 @@ Author-model: <claude|codex> (<effort>)
 ## Verification
 <one row per run: SHA, command, environment, result, duration — focused tests, full suite, build, lint, e2e>
 ## Screenshots
-<Linear attachment links, one per state and width>
+<link to the Linear `## Screenshots` comment, then one line per state and width>
 ## Deviations / notes
 ```
 
-`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Upload screenshots to the Linear issue (`prepare_attachment_upload` → `create_attachment_from_upload`) and link them. Never commit them. For a final PR to `develop` (small work), which gets no review panel, start the body with the `## Review guide` and `## Where the automation is least sure` sections shaped as in `wg-close` Output, scoped to this PR, and run the full suite on the head SHA as in "During review". Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
+`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Put the screenshots inline in one Linear issue comment as the conventions Evidence rule says (one native-resolution file per state and width, `prepare_file_upload`, never stitched, never Resources) and link that comment. Never commit them. For a final PR to `develop` (small work), which gets no review panel, start the body with the `## Review guide` and `## Where the automation is least sure` sections shaped as in `wg-close` Output, scoped to this PR, and run the full suite on the head SHA as in "During review". Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
 
 ## During review
 
