@@ -1,6 +1,6 @@
 {
   "name": "workgraph",
-  "version": "2.10.1",
+  "version": "2.11.0",
   "description": "Linear-driven feature pipeline: grill, spec, architect, plan, TDD implement, cross-model PR review, close. Upstream skills are pinned git submodules under vendor/.",
   "author": {
     "name": "shiro-el"

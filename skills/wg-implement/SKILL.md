@@ -20,6 +20,7 @@ Read `${WORKGRAPH_ROOT}/conventions.md` first. You own exactly one Linear issue.
 Follow `${WORKGRAPH_ROOT}/vendor/addyosmani-agent-skills/skills/test-driven-development/SKILL.md`, including "Discover the Stack First". Overrides:
 
 - Work through the issue's Test design table row by row: RED (run it, save the failing output), GREEN (smallest change), REFACTOR. Do not write production code for a row before its test has failed for the intended reason.
+- Commit each row's test alone once it fails for the intended reason (`test(<ISSUE-ID>): RED <row>`), before any production code for that row. From then on that test is locked: GREEN and REFACTOR commits do not touch it. A locked test that turns out wrong may be changed only in its own commit, listed under the PR's `Test changes after RED` with the commit SHA and why; never weaken an assertion to get to green.
 - A row you find impossible or wrong is not silently dropped: note it in the PR's evidence with the reason.
 - Implement against the Architecture sketch as in `${WORKGRAPH_ROOT}/vendor/cursor-plugins/pstack/skills/architect/SKILL.md` Phase D. A needed deviation (new parameter, changed type, moved boundary) on an `interface`-defined surface stops you: comment on the issue with the deviation and why, add `needs-human`, and report. Repeated same-shape friction is Phase E's scrap signal: report it rather than patching around it.
 - Follow the repo's CLAUDE.md / AGENTS.md and existing patterns, per feature-dev phase 5.
@@ -43,7 +44,9 @@ Author-model: <claude|codex> (<effort>)
 
 ## What changed
 ## Test design coverage
-| Row | Test | Before (fail output, trimmed) | After |
+| Row | Test | RED commit | Before (fail output, trimmed) | After |
+## Test changes after RED
+<one row per commit that edits a locked test: SHA, test, why; "none" if none>
 ## Verification
 <one row per run: SHA, command, environment, result, duration — focused tests, full suite, build, lint, e2e>
 ## Screenshots
@@ -55,7 +58,7 @@ Author-model: <claude|codex> (<effort>)
 
 ## During review
 
-You receive confirmed findings from `wg-review`. For each one: reproduce it, then grep for every place that shares the defective pattern (sibling writers, the other half of a read/write pair, the same rule duplicated in SQL and app code) and fix all of them in the same push, test-first (failing-before → passing-after) for each. Push, and reply on the PR thread with the evidence and the list of places checked. If you dispute a finding, reply with counter-evidence instead of changing code.
+You receive confirmed findings from `wg-review`. For each one: reproduce it, then grep for every place that shares the defective pattern (sibling writers, the other half of a read/write pair, the same rule duplicated in SQL and app code) and fix all of them in the same push, test-first (failing-before → passing-after) for each, with the same RED commit and test lock. Push, and reply on the PR thread with the evidence and the list of places checked. If you dispute a finding, reply with counter-evidence instead of changing code.
 
 When the coordinator reports that review passed, run the full suite on that head SHA holding the check lane, add it to the PR's Verification section and report the result. A failure is fixed like a finding: test-first, push, and the new SHA goes back to review.
 
