@@ -22,7 +22,7 @@ The skills here are thin overlays. The upstream skills are pinned git submodules
 | Stage | Upstream |
 |---|---|
 | grill | mattpocock/skills `grilling` |
-| spec | anthropics/claude-code `feature-dev` (explorer, phases 2–3) + github/spec-kit `specify`, `clarify` + anthropics/claude-plugins-community `html-plan` |
+| spec | anthropics/claude-code `feature-dev` (explorer, phases 2–3) + github/spec-kit `specify` + thariqs/html-effectiveness implementation-plan page |
 | architect | cursor/plugins pstack `architect` + `arena` + feature-dev `code-architect` |
 | plan | addyosmani/agent-skills `planning-and-task-breakdown` + spec-kit `tasks` + feature-dev `code-architect` critique |
 | implement | addyosmani `test-driven-development`, `browser-testing-with-devtools` + feature-dev `code-reviewer` |
@@ -31,7 +31,7 @@ The skills here are thin overlays. The upstream skills are pinned git submodules
 
 Shared rules (Linear mapping, statuses, labels, Estimate → reviewer count, cross-model roster, evidence rule) are in [`conventions.md`](conventions.md).
 
-`wg-spec` drafts the spec in Linear and presents an interactive html-plan page for review. Use the user's language, including Korean, for the spec, questions and captions. Paste the page's **Respond → Copy response** output into chat; the agent reconciles it into Linear before advancing. HTML files are temporary review snapshots outside the repository. Linear keeps the spec, decisions and open questions, so another session can resume a pending review without the original page.
+`wg-spec` writes the decisions settled in `wg-grill` into a clean Linear spec and presents it as a single HTML page built on the html-effectiveness implementation-plan template. It does not reopen the design: it asks only when the code contradicts a settled decision. Use the user's language, including Korean, for the spec and captions. Reply in chat with corrections; the agent reconciles them into Linear before advancing. HTML files are temporary review snapshots outside the repository. Linear keeps the spec, decisions and open questions, so another session can resume a pending review without the original page.
 
 `$improve-codebase-architecture` (Claude Code: `/improve-codebase-architecture`) exposes the standalone upstream architecture review: scan the existing codebase, show visual refactoring candidates, then explore the user's selection. Its design vocabulary, grilling and domain-modeling references load from `vendor/` without separate installation. Exploration and the temporary HTML report can run without Linear; lasting decisions and resolved terminology are recorded in the relevant Linear project or issue. The skill overrides upstream ADR creation, ADR templates, and repository documentation writes, and does not automatically start the Workgraph pipeline. Upstream skills under `vendor/` are reference material; only entry points under `skills/` are exposed by this package.
 
@@ -66,7 +66,7 @@ Restart Codex after installation. In a chat for the repository you want to work 
 
 Requirements: connected Linear tools, authenticated `gh`, and both authenticated `claude` and `codex` CLIs for cross-model stages. Codex uses native Codex agents and calls the Claude CLI for Claude assignments; Claude Code does the reverse. Stages report missing capabilities instead of silently skipping required reviewers or verification. Browser verification also requires browser tools in the runner's environment.
 
-`wg-spec` also requires Node.js to pack the HTML review page; html-plan has no other runtime dependencies. Its built-in controls and generated response headings may remain in English while the review content is Korean.
+`wg-spec`'s review page is a self-contained HTML file with no runtime dependencies; checking it in a browser uses a local `python -m http.server`.
 
 The repo marketplace is `.agents/plugins/marketplace.json`; `.codex-plugin/plugin.json` declares the shared `skills/` directory. Keep the full clone in place so the upstream files remain available. See [`conventions.md`](conventions.md) for host-specific execution rules.
 

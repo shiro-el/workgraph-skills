@@ -49,7 +49,7 @@ Do not offer, create, or update ADR files, load upstream ADR templates, or intro
 
 Code comments stay limited to the why the code cannot show. A scratch file needed during work goes under the OS temp dir, never the repo.
 
-`wg-spec` uses html-plan pages as temporary review snapshots of the Linear draft. Keep their HTML and assets under the OS temp dir. Record review decisions, rationale and open questions in Linear; later stages resume from Linear without needing the page. `## Spec review` is `Pending` during review and `Complete` once the user's feedback is reflected in the spec. Pending drafts stay in `Backlog` and return to `wg-spec` before architecture or implementation.
+`wg-spec` uses HTML pages as temporary review snapshots of the Linear draft. Keep their HTML and assets under the OS temp dir. Record review decisions, rationale and open questions in Linear; later stages resume from Linear without needing the page. `## Spec review` is `Pending` during review and `Complete` once the user's feedback is reflected in the spec. Pending drafts stay in `Backlog` and return to `wg-spec` before architecture or implementation.
 
 ## Sizing
 

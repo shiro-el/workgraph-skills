@@ -55,12 +55,7 @@ def install(skills_dir):
         'vendor/cursor-plugins/pstack/skills/architect/SKILL.md',
         'vendor/spec-kit/templates/commands/specify.md',
         'vendor/claude-code/plugins/feature-dev/agents/code-explorer.md',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/SKILL.md',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/references/blocks.md',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/examples/scheduled-send.html',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/runtime/pack.mjs',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/runtime/htmlplan.js',
-        'vendor/claude-plugins-community/html-plan/skills/html-plan/runtime/htmlplan.css',
+        'vendor/html-effectiveness/16-implementation-plan.html',
     ]
     missing = [p for p in required if not (root / p).is_file()]
     if missing:

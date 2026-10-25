@@ -18,7 +18,7 @@
 	path = vendor/spec-kit
 	url = https://github.com/github/spec-kit.git
 	shallow = true
-[submodule "vendor/claude-plugins-community"]
-	path = vendor/claude-plugins-community
-	url = https://github.com/anthropics/claude-plugins-community.git
+[submodule "vendor/html-effectiveness"]
+	path = vendor/html-effectiveness
+	url = https://github.com/thariqs/html-effectiveness.git
 	shallow = true
