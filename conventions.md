@@ -12,8 +12,8 @@ Every role reads **Host compatibility**, **Linear is the only document store**, 
 | grill, spec | Sizing, Issue format |
 | architect, plan | Sizing, Issue format, Labels, Risk |
 | implementer | Issue format, Status flow, Labels, Verification runs, Worktrees |
-| reviewer, lead judge | Labels, Risk, Cross-model reviewer roster, Verification runs |
-| close verifier, auditor, judge | Status flow, PR review and merge, Verification runs, Work metrics |
+| reviewer, lead judge | Labels, Risk, Cross-model reviewer roster, Verification runs, Worktrees |
+| close verifier, auditor, judge | Status flow, PR review and merge, Verification runs, Work metrics, Worktrees |
 
 ## Host compatibility (Codex and Claude Code)
 
@@ -173,3 +173,5 @@ A high Dismissed share means reviewer prompts need work; repeated rounds on one 
 Every implementer and reviewer gets its own git worktree. Branch names use the Linear `gitBranchName` so the GitHub integration links the PR. Large work: base `project/<project-slug>`; small work: base `develop`.
 
 **Agent labels.** Every assignment gets a label `wg-<role>-<subject>[-<round>][-<i>]`. Role is one of `impl`, `pre` (pre-review), `e2e`, `setup`, `rv` (reviewer), `judge`, `tdr` (test-design reviewer), `arch`, `crit`, `explore`, `verify`, `audit`, `close`. Subject is the Linear issue identifier (`SOPO-158`), or the project slug for project-level work. Round and index are numbers, present when the role has them. Examples: `wg-impl-SOPO-158`, `wg-pre-SOPO-158-2`, `wg-rv-SOPO-158-1-3`, `wg-audit-checkout-revamp-1`. Name the assignment's worktree or temp dir `<tmp>/<label>`, use the label as a native subagent's `description`, and start a CLI prompt file name with it. Metrics join transcripts to issues by this label, so never improvise one.
+
+**Cleanup.** Whoever creates a worktree removes it, the coordinator when a setup subagent made it, together with every per-worktree resource the repo allocates for it (DB slot or schema, containers, ports), using the repo's own release command from its CLAUDE.md / AGENTS.md, then `git worktree remove --force <path>` and `git worktree prune`. A read-only worktree (reviewer, e2e, pre-review, judge, auditor, verifier, architect) goes as soon as its result has been read, even when the assignment failed; its output lives in `<tmp>`, outside it. An implementer's worktree, including one made by `isolation: "worktree"` (the host keeps it once it has commits), goes when its PR merges or is abandoned, and only when `git status --porcelain` is empty and `git log @{u}..` shows nothing; otherwise report it and leave it. If the repo allocates per-worktree resources but documents no release command, report that once per session.
