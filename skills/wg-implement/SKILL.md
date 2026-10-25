@@ -39,6 +39,8 @@ Fix confirmed findings under the evidence rule, then open the PR.
 `gh pr create` against the base branch, title = issue title, body:
 
 ```markdown
+Linear: [<ISSUE-ID> <issue title>](<issue URL>)
+
 Closes <ISSUE-ID>
 Author-model: <claude|codex> (<effort>)
 
@@ -54,7 +56,7 @@ Author-model: <claude|codex> (<effort>)
 ## Deviations / notes
 ```
 
-`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Put the screenshots inline in one Linear issue comment as the conventions Evidence rule says (one native-resolution file per state and width, `prepare_file_upload`, never stitched, never Resources) and link that comment. Never commit them. For a final PR to `develop` (small work), which gets no review panel, start the body with the `## Review guide` and `## Where the automation is least sure` sections shaped as in `wg-close` Output, scoped to this PR, and run the full suite on the head SHA as in "During review". Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
+`Author-model` is your model family and effort as the coordinator assigned them; the review roster reads it. Put the screenshots inline in one Linear issue comment as the conventions Evidence rule says (one native-resolution file per state and width, `prepare_file_upload`, never stitched, never Resources) and link that comment. Never commit them. For a final PR to `develop` (small work), which gets no review panel, put the `Linear:` line first, then the `## Review guide` and `## Where the automation is least sure` sections shaped as in `wg-close` Output, scoped to this PR, and run the full suite on the head SHA as in "During review". Set the issue to `In Review`, then report the PR URL and head SHA to the coordinator.
 
 ## During review
 
