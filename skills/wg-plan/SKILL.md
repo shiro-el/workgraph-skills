@@ -12,7 +12,7 @@ Read `${WORKGRAPH_ROOT}/conventions.md`, then follow `${WORKGRAPH_ROOT}/vendor/a
 ## Where things go
 
 - Ignore `tasks/plan.md`, `tasks/todo.md` and spec-kit's `tasks.md`. Each task is a Linear issue in the project (`save_issue`, team template, label `Feature` / `Improvement` / `Bug`). Plan-level risks and open questions go into the project description's `## Open questions`.
-- Each dependency is a Linear `blocks` relation. No cycles. The `interface` issue from the Architecture document comes first and blocks everything that uses its types.
+- Each dependency is a Linear `blocks` relation. No cycles. A `blocks` edge needs a real need: the later issue uses the earlier one's types, functions, schema or files. Deployment order alone is not one; it becomes merge order inside the project branch, which only reaches users through `wg-close`. Keep the critical path (longest blocks chain) short, and report its length and the widest ready set with the DAG. The `interface` issue from the Architecture document comes first and blocks everything that uses its types.
 - Every issue carries the conventions issue format: Background, Scope, Acceptance criteria, Test design, Out of scope. Add a `## Files likely touched` list and the slice of the Architecture document it implements, linked rather than copied.
 
 ## Slicing
