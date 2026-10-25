@@ -21,6 +21,12 @@ The Linear project description (the spec) and the explorer findings from `wg-spe
 - Cross-judge: run it on the model family that is not yours (`claude` when the coordinator is Codex, `codex` when it is Claude Code). It gets the rubric and the candidates by label.
 - Screen every candidate against `${WORKGRAPH_ROOT}/vendor/cursor-plugins/pstack/skills/architect/references/design-red-flags.md`.
 
+## Proportionality
+
+- The rubric always includes "cost in proportion to the spec": new tables, cross-DB protocols, background jobs, migrations and expand → contract steps, each counted. Interface depth does not outweigh it.
+- Every mechanism the chosen design adds beyond the smallest candidate (a fence, a reservation, a recovery job, a cleanup migration) names the spec requirement it serves and the concrete failure the smaller candidate would have. With neither, drop it.
+- Synthesis subtracts as well as adds: list what was taken from other candidates and what was cut from the base.
+
 ## Checkpoint is on by default
 
 Phase C asks for a human checkpoint. Present the synthesized design (usage sketch, types, signatures, module map, boundaries, synthesis decision, rejected candidates) and wait for the user's approval. Pushback means re-ground and rerun Phase B.

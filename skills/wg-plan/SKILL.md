@@ -19,6 +19,8 @@ Read `${WORKGRAPH_ROOT}/conventions.md`, then follow `${WORKGRAPH_ROOT}/vendor/a
 
 Vertical slices. Size S or M; L is split. An issue with "and" in its title is split. Two issues that edit the same files are either sequenced with `blocks` or merged into one. Note the shared files in both issues.
 
+Merging is the default for small pieces: an XS issue, or two issues in the same layer with the same reviewers that one PR can carry at size M, become one issue. Every issue must ship a change a reviewer can judge on its own; a test-only or docs-only issue folds into the issue whose behavior it covers.
+
 ## Test design is designed here, not during implementation
 
 For each issue:
@@ -32,7 +34,7 @@ Set the Estimate on every issue per conventions (`n` reviewers). State the reaso
 
 ## Alternative-architecture critique (automatic)
 
-After the issue set is drafted, launch 2 critics in parallel, one claude (`Agent`, `general-purpose`) and one codex. Each critic's prompt is `${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-architect.md` (body) + the spec + the Architecture document + the issue list with its DAG. Task: "design your own alternative architecture and breakdown for this spec, then list concrete places where the given plan is worse: wrong boundaries, missing issues, wrong order, issues too big, hidden coupling, untestable criteria". Triage each point: adopt, reject with a reason, or put it to the user if it changes the Architecture. Apply the adopted changes to the issues and relations.
+After the issue set is drafted, launch 2 critics in parallel, one claude (`Agent`, `general-purpose`) and one codex. Each critic's prompt is `${WORKGRAPH_ROOT}/vendor/claude-code/plugins/feature-dev/agents/code-architect.md` (body) + the spec + the Architecture document + the issue list with its DAG. Task: "design your own alternative architecture and breakdown for this spec, then list concrete places where the given plan is worse: wrong boundaries, missing issues, wrong order, issues too big, issues too small or that should merge, hidden coupling, untestable criteria". Triage each point: adopt, reject with a reason, or put it to the user if it changes the Architecture. A point that adds an issue is adopted only with the failure it prevents, and folds into an existing issue when one can carry it. Apply the adopted changes to the issues and relations.
 
 ## Finish
 
